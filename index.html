@@ -25,6 +25,8 @@
   --amber-soft: rgba(217, 119, 6, 0.1);
   --good: #059669;
   --good-soft: rgba(5, 150, 105, 0.1);
+  --purple: #7C3AED;
+  --purple-soft: rgba(124, 58, 237, 0.1);
   --glass-border: 1px solid rgba(255, 255, 255, 0.9);
   --shadow-glass: 0 10px 30px 0 rgba(31, 38, 135, 0.07);
   --shadow-hover: 0 20px 40px 0 rgba(31, 38, 135, 0.12);
@@ -50,7 +52,7 @@ body {
   justify-content: space-between;
 }
 
-.wrap { max-width: 900px; margin: 0 auto; padding-inline: 20px; width: 100%; }
+.wrap { max-width: 950px; margin: 0 auto; padding-inline: 20px; width: 100%; }
 h1, h2, h3 { font-family: var(--font-display); line-height: 1.25; margin: 0; }
 p { margin: 0; }
 a { text-decoration: none; color: inherit; }
@@ -69,24 +71,34 @@ header.profile { padding-block: 50px 30px; text-align: center; display: grid; ga
 .profile h1 .highlight { color: var(--accent); }
 .bio-desc { color: var(--muted); max-width: 500px; font-size: 1.05rem; }
 
-/* Thanh lọc danh mục liền mạch (Unified Bar) */
-.filter-container { display: flex; justify-content: center; margin-bottom: 28px; }
+/* Thanh trượt danh mục Liquid Glass Slider */
+.filter-container { 
+  display: flex; 
+  justify-content: center; 
+  margin-bottom: 28px; 
+  overflow-x: auto; 
+  padding-bottom: 8px;
+  scrollbar-width: none; 
+}
+.filter-container::-webkit-scrollbar { display: none; }
+
 .filter-tabs {
   display: inline-flex;
   background: var(--surface);
   border: var(--glass-border);
   border-radius: 999px;
-  padding: 5px;
-  gap: 4px;
+  padding: 6px;
+  gap: 6px;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: var(--shadow-glass), var(--inner-glow);
+  white-space: nowrap;
 }
 .filter-btn {
   background: transparent; border: none; color: var(--muted);
-  padding: 10px 20px; border-radius: 999px; font-weight: 600; font-size: 0.9rem;
+  padding: 10px 22px; border-radius: 999px; font-weight: 600; font-size: 0.9rem;
   cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
+  flex-shrink: 0;
 }
 .filter-btn:hover { color: var(--ink); }
 .filter-btn.active {
@@ -118,6 +130,7 @@ main.content { padding-bottom: 50px; display: grid; grid-template-columns: repea
 }
 .badge.mod { background: var(--accent-soft); color: var(--accent); }
 .badge.rsp { background: var(--amber-soft); color: var(--amber); }
+.badge.litematica { background: var(--purple-soft); color: var(--purple); }
 .badge.map { background: var(--good-soft); color: var(--good); }
 
 .card h2 { font-size: 1.15rem; word-break: break-word; }
@@ -142,7 +155,7 @@ footer { color: var(--muted); font-size: .85rem; padding-block: 24px; text-align
     <img src="ava.jpg" alt="Avatar">
   </div>
   <h1>chisaki167 <span class="highlight">MC Hub</span></h1>
-  <p class="bio-desc">Kho lưu trữ cá nhân chuyên chia sẻ Mods, Resource Packs (RSP) và Maps cho Minecraft Java Edition.</p>
+  <p class="bio-desc">Kho lưu trữ cá nhân chuyên chia sẻ Mods, Resource Packs (RSP), Litematica và Maps cho Minecraft Java Edition.</p>
 </header>
 
 <div class="wrap filter-container">
@@ -150,12 +163,13 @@ footer { color: var(--muted); font-size: .85rem; padding-block: 24px; text-align
     <button class="filter-btn active" onclick="filterItems('all', event)">Tất cả</button>
     <button class="filter-btn" onclick="filterItems('mod', event)">Mods</button>
     <button class="filter-btn" onclick="filterItems('rsp', event)">Resource Packs (RSP)</button>
+    <button class="filter-btn" onclick="filterItems('litematica', event)">Litematica</button>
     <button class="filter-btn" onclick="filterItems('map', event)">Maps</button>
   </div>
 </div>
 
 <main class="content wrap" id="itemGrid">
-  <div class="loading">Đang tải danh sách tài nguyên từ GitHub...</div>
+  <div class="loading">Đang tải danh sách tài nguyên...</div>
 </main>
 
 <footer class="wrap">
@@ -166,65 +180,103 @@ footer { color: var(--muted); font-size: .85rem; padding-block: 24px; text-align
 // --- CẤU HÌNH THÔNG TIN GITHUB ---
 const GITHUB_USER = 'chisaki167';
 const GITHUB_REPO = 'chisaki167.github.io'; 
-const FOLDER_PATH = 'mods';      
 
-async function loadMods() {
-  const grid = document.getElementById('itemGrid');
-  let files = [];
+// --- 3 FILE MẪU RESOURCE PACKS (RSP) GẮN LINK GOOGLE DRIVE ---
+const MANUAL_RSP_LIST = [
+  {
+    name: "Resource Pack 1.zip",
+    driveUrl: "https://drive.google.com/file/d/1FVI24eQCYtYzjeaYVLBPpwP7sfUlpPII/view?usp=drivesdk"
+  },
+  {
+    name: "Resource Pack 2.zip",
+    driveUrl: "https://drive.google.com/file/d/19JFlifbPNEAZx9t6iQ5lPh_Nerh6vY6z/view?usp=drivesdk"
+  },
+  {
+    name: "Resource Pack 3.zip",
+    driveUrl: "https://drive.google.com/file/d/1jRp8GNE3T6n0ZrFtRuY9YcwudJ-fmxF3/view?usp=drivesdk"
+  }
+];
 
+// Hàm phụ trợ chuyển đổi link Google Drive sang định dạng tải xuống trực tiếp
+function convertDriveLink(url) {
+  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) {
+    return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+  }
+  return url;
+}
+
+async function fetchFolderContent(folderPath, category, badgeText) {
   try {
-    // Gọi trực tiếp GitHub API với giới hạn 100 file để lấy đầy đủ kho mod của em
-    const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FOLDER_PATH}?per_page=100`;
+    const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${folderPath}?per_page=100`;
     const response = await fetch(apiUrl);
-    
     if (response.ok) {
       const data = await response.json();
+      let list = [];
       data.forEach(file => {
-        // Chỉ lọc lấy file .jar hoặc .zip
-        if (file.name.endsWith('.jar') || file.name.endsWith('.zip')) {
-          files.push(file);
+        if (file.name.endsWith('.zip') || file.name.endsWith('.litematic') || file.name.endsWith('.jar')) {
+          list.push({
+            name: file.name,
+            category: category,
+            badgeText: badgeText,
+            download_url: file.download_url,
+            size: file.size
+          });
         }
       });
-    } else {
-      throw new Error('Không thể kết nối đến kho lưu trữ GitHub.');
+      return list;
     }
   } catch (err) {
-    console.error("Lỗi:", err);
-    grid.innerHTML = `<div class="loading" style="color:#DC2626;">Lỗi tải dữ liệu: ${err.message}. Hãy đảm bảo thư mục 'mods' đã tồn tại trên GitHub!</div>`;
-    return;
+    console.error(`Lỗi quét thư mục ${folderPath}:`, err);
   }
+  return [];
+}
 
-  if (files.length === 0) {
-    grid.innerHTML = '<div class="loading">Không tìm thấy file .jar hoặc .zip nào trong thư mục mods trên GitHub.</div>';
+async function loadAllContent() {
+  const grid = document.getElementById('itemGrid');
+  let allItems = [];
+
+  // 1. Lấy danh sách Mods từ GitHub
+  const mods = await fetchFolderContent('mods', 'mod', 'Mod');
+
+  // 2. Nạp 3 file Resource Packs cấu hình thủ công qua Google Drive
+  const rsps = MANUAL_RSP_LIST.map(rsp => ({
+    name: rsp.name,
+    category: 'rsp',
+    badgeText: 'Resource Pack',
+    download_url: convertDriveLink(rsp.driveUrl),
+    size: null
+  }));
+
+  // 3. Lấy danh sách Litematica từ thư mục 'litematicas' trên GitHub
+  const litematics = await fetchFolderContent('litematicas', 'litematica', 'Litematica');
+
+  // 4. Lấy danh sách Maps từ thư mục 'maps' trên GitHub
+  const maps = await fetchFolderContent('maps', 'map', 'Map');
+
+  allItems = [...mods, ...rsps, ...litematics, ...maps];
+
+  if (allItems.length === 0) {
+    grid.innerHTML = '<div class="loading">Không tìm thấy tài nguyên nào.</div>';
     return;
   }
 
   let htmlContent = '';
-  files.forEach(file => {
-    // Lấy toàn bộ tên file (bỏ phần đuôi .jar hoặc .zip) làm tên hiển thị
-    const modName = file.name.substring(0, file.name.lastIndexOf('.'));
-
-    // Phân loại nhãn dựa vào đuôi file (.zip là Resource Pack, .jar là Mod)
-    let category = 'mod';
-    let badgeText = 'Mod';
-    if (file.name.endsWith('.zip')) {
-      category = 'rsp';
-      badgeText = 'Resource Pack';
-    }
-
-    const fileSizeMB = file.size ? (file.size / (1024 * 1024)).toFixed(1) : '–';
+  allItems.forEach(item => {
+    const displayName = item.name.substring(0, item.name.lastIndexOf('.')) || item.name;
+    const fileSizeMB = item.size ? (item.size / (1024 * 1024)).toFixed(1) : 'Google Drive';
 
     htmlContent += `
-      <div class="card" data-category="${category}">
+      <div class="card" data-category="${item.category}">
         <div class="card-header">
-          <span class="badge ${category}">${badgeText}</span>
+          <span class="badge ${item.category}">${item.badgeText}</span>
           <span class="version">Java Edition</span>
         </div>
-        <h2>${modName}</h2>
-        <p>File: ${file.name}</p>
+        <h2>${displayName}</h2>
+        <p>File: ${item.name}</p>
         <div class="card-footer">
-          <span class="version">${fileSizeMB} MB</span>
-          <a href="${file.download_url}" class="btn-dl" target="_blank" download>Tải xuống →</a>
+          <span class="version">${fileSizeMB} ${item.size ? 'MB' : ''}</span>
+          <a href="${item.download_url}" class="btn-dl" target="_blank" download>Tải xuống →</a>
         </div>
       </div>
     `;
@@ -249,8 +301,8 @@ function filterItems(category, event) {
   });
 }
 
-// Khởi chạy tải dữ liệu
-loadMods();
+// Khởi chạy
+loadAllContent();
 </script>
 
 </body>
