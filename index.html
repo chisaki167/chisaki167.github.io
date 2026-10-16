@@ -47,7 +47,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Video Background */
 .bg-video {
   position: fixed;
   top: 0; left: 0;
@@ -56,7 +55,6 @@ body {
   z-index: -2;
 }
 
-/* Lớp phủ mờ giúp giao diện nổi bật và dễ đọc chữ hơn */
 .bg-overlay {
   position: fixed;
   top: 0; left: 0;
@@ -72,7 +70,6 @@ h1, h2, h3 { font-family: var(--font-display); line-height: 1.25; margin: 0; }
 p { margin: 0; }
 a { text-decoration: none; color: inherit; }
 
-/* Header Profile Bio */
 header.profile { padding-block: 50px 30px; text-align: center; display: grid; gap: 12px; place-items: center; }
 .avatar {
   width: 96px; height: 96px; border-radius: 50%; border: 3px solid var(--accent);
@@ -86,7 +83,6 @@ header.profile { padding-block: 50px 30px; text-align: center; display: grid; ga
 .profile h1 .highlight { color: #60A5FA; }
 .bio-desc { color: var(--muted); max-width: 500px; font-size: 1.05rem; }
 
-/* Thanh trượt danh mục Liquid Glass trong suốt */
 .filter-container { 
   display: flex; 
   justify-content: center; 
@@ -121,7 +117,6 @@ header.profile { padding-block: 50px 30px; text-align: center; display: grid; ga
   box-shadow: 0 4px 15px var(--accent-soft);
 }
 
-/* Grid Cards */
 main.content { padding-bottom: 50px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 20px; }
 
 .card {
@@ -165,7 +160,6 @@ footer { color: var(--muted); font-size: .85rem; padding-block: 24px; text-align
 </head>
 <body>
 
-<!-- Video Nền -->
 <video class="bg-video" autoplay muted loop playsinline>
   <source src="background.mp4" type="video/mp4">
   Trình duyệt của bạn không hỗ trợ thẻ video.
@@ -176,8 +170,8 @@ footer { color: var(--muted); font-size: .85rem; padding-block: 24px; text-align
   <div class="avatar">
     <img src="ava.jpg" alt="Avatar">
   </div>
-  <h1>chisaki167 <span class="highlight">MC Hub</span></h1>
-  <p class="bio-desc">Kho lưu trữ cá nhân chuyên chia sẻ Mods, ResourcePacks, Litematica và Maps cho Minecraft Java Edition.</p>
+  <h1>chisaki167 <span class="highlight">Bio</span></h1>
+  <p class="bio-desc">Kho lưu trữ cá nhân chuyên chia sẻ Mods, ResourcePacks, Litematica và Maps cho Minecraft Java.</p>
 </header>
 
 <div class="wrap filter-container">
@@ -199,11 +193,9 @@ footer { color: var(--muted); font-size: .85rem; padding-block: 24px; text-align
 </footer>
 
 <script>
-// --- CẤU HÌNH THÔNG TIN GITHUB ---
 const GITHUB_USER = 'chisaki167';
 const GITHUB_REPO = 'chisaki167.github.io'; 
 
-// --- 3 FILE RESOURCE PACKS (RSP) GẮN LINK GOOGLE DRIVE ---
 const MANUAL_RSP_LIST = [
   {
     name: "RSP by chisaki167 (Nakano Miku).zip",
@@ -219,7 +211,6 @@ const MANUAL_RSP_LIST = [
   }
 ];
 
-// Hàm phụ trợ chuyển đổi link Google Drive sang định dạng tải xuống trực tiếp
 function convertDriveLink(url) {
   const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
   if (match && match[1]) {
@@ -258,10 +249,8 @@ async function loadAllContent() {
   const grid = document.getElementById('itemGrid');
   let allItems = [];
 
-  // 1. Lấy danh sách Mods từ GitHub (chỉ lấy .jar)
   const mods = await fetchFolderContent('mods', 'mod', 'Mod', ['.jar']);
 
-  // 2. Nạp 3 file Resource Packs với tên tùy chỉnh gắn link Google Drive
   const rsps = MANUAL_RSP_LIST.map(rsp => ({
     name: rsp.name,
     category: 'rsp',
@@ -270,10 +259,8 @@ async function loadAllContent() {
     size: null
   }));
 
-  // 3. Lấy danh sách Litematica từ thư mục 'litematicas' trên GitHub
   const litematics = await fetchFolderContent('litematicas', 'litematica', 'Litematica', ['.litematic', '.zip']);
 
-  // 4. Lấy danh sách Maps từ thư mục 'saves' trên GitHub (chỉ lọc file .zip)
   const maps = await fetchFolderContent('saves', 'map', 'Map', ['.zip']);
 
   allItems = [...mods, ...rsps, ...litematics, ...maps];
@@ -307,7 +294,6 @@ async function loadAllContent() {
   grid.innerHTML = htmlContent;
 }
 
-// Chức năng lọc danh mục mượt mà
 function filterItems(category, event) {
   const buttons = document.querySelectorAll('.filter-btn');
   buttons.forEach(btn => btn.classList.remove('active'));
@@ -323,7 +309,6 @@ function filterItems(category, event) {
   });
 }
 
-// Khởi chạy
 loadAllContent();
 </script>
 
