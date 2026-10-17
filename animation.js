@@ -1,11 +1,5 @@
 var currentIndex=0,currentCategory='all',GITHUB_USER='chisaki167',GITHUB_REPO='chisaki167.github.io';
 
-var MANUAL_RSP_LIST=[
-{name:"RSP by chisaki167 (Nakano Miku).zip",driveUrl:"https://drive.google.com/file/d/1FVI24eQCYtYzjeaYVLBPpwP7sfUlpPII/view?usp=drivesdk"},
-{name:"RSP by chisaki167 (Alya).zip",driveUrl:"https://drive.google.com/file/d/19JFlifbPNEAZx9t6iQ5lPh_Nerh6vY6z/view?usp=drivesdk"},
-{name:"RSP by chisaki167 (Haimiya Mio).zip",driveUrl:"https://drive.google.com/file/d/1jRp8GNE3T6n0ZrFtRuY9YcwudJ-fmxF3/view?usp=drivesdk"}
-];
-
 function convertDriveLink(u){
 var m=u.match(/\/d\/([a-zA-Z0-9_-]+)/);
 if(m&&m[1])return'https://drive.google.com/uc?export=download&id='+m[1];
@@ -109,9 +103,8 @@ return[];
 async function loadAllContent(){
 var g=document.getElementById('itemGrid'),allItems=[];
 var mods=await fetchFolderContent('mods','mod','Mod',['.jar']);
-var rsps=MANUAL_RSP_LIST.map(function(r){
-return{name:r.name,category:'rsp',badgeText:'Resource Pack',download_url:convertDriveLink(r.driveUrl),size:null};
-});
+// Thay đổi: Lấy dữ liệu trực tiếp từ thư mục 'rsp' trên GitHub thay vì dùng MANUAL_RSP_LIST, chỉ lọc file định dạng '.zip'
+var rsps=await fetchFolderContent('rsp','rsp','Resource Pack',['.zip']);
 var lit=await fetchFolderContent('litematicas','litematica','Litematica',['.litematic','.zip']);
 var maps=await fetchFolderContent('saves','map','Map',['.zip']);
 
@@ -124,8 +117,8 @@ return;
 
 var html='';
 for(var i=0;i<allItems.length;i++){
-var item=allItems[i],dn=item.name.substring(0,item.name.lastIndexOf('.'))||item.name,fs=item.size?(item.size/(1024*1024)).toFixed(1):'Google Drive';
-html+=`<div class="card" data-category="${item.category}"><div class="card-header"><span class="badge ${item.category}">${item.badgeText}</span><span class="version">Java Edition</span></div><div class="card-body"><h2>${dn}</h2><p>File: ${item.name}</p></div><div class="card-footer"><span class="version">${fs} ${item.size?'MB':''}</span><a href="${item.download_url}" class="btn-dl" target="_blank" download>Tải xuống →</a></div></div>`;
+var item=allItems[i],dn=item.name.substring(0,item.name.lastIndexOf('.'))||item.name,fs=item.size?(item.size/(1024*1024)).toFixed(1):'0.0';
+html+=`<div class="card" data-category="${item.category}"><div class="card-header"><span class="badge ${item.category}">${item.badgeText}</span><span class="version">Java Edition</span></div><div class="card-body"><h2>${dn}</h2><p>File: ${item.name}</p></div><div class="card-footer"><span class="version">${fs} MB</span><a href="${item.download_url}" class="btn-dl" target="_blank" download>Tải xuống →</a></div></div>`;
 }
 
 g.innerHTML=html;
