@@ -8,249 +8,52 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Lexend:wght@500;600;700&display=swap">
 <style>
-
-:root {
-  color-scheme: dark;
-  --bg: #090D16;
-  --surface: rgba(255, 255, 255, 0.06);
-  --surface-hover: rgba(255, 255, 255, 0.12);
-  --ink: #F8FAFC;
-  --muted: #94A3B8;
-  --accent: #3B82F6;
-  --accent-ink: #FFFFFF;
-  --accent-soft: rgba(59, 130, 246, 0.25);
-  --amber: #F59E0B;
-  --amber-soft: rgba(245, 158, 11, 0.25);
-  --good: #10B981;
-  --good-soft: rgba(16, 185, 129, 0.25);
-  --purple: #8B5CF6;
-  --purple-soft: rgba(139, 92, 246, 0.25);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.18);
-  --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.35), inset 0 -1px 0 0 rgba(0, 0, 0, 0.2);
-  --shadow-glass: 0 16px 40px 0 rgba(0, 0, 0, 0.45);
-  --font-display: "Lexend", "Be Vietnam Pro", system-ui, sans-serif;
-  --font-body: "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
-  --r: 24px;
-}
-
-*, *::before, *::after { box-sizing: border-box; }
-body {
-  margin: 0; padding: 0;
-  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
-  background-color: var(--bg);
-  color: var(--ink);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  overflow-x: hidden;
-}
-
-.bg-video {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  object-fit: cover;
-  z-index: -2;
-  transition: opacity 0.5s ease;
-}
-
-.bg-video.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.bg-overlay {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background: rgba(4, 8, 18, 0.65);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: -1;
-  transition: background 0.5s ease;
-}
-
-.bg-overlay.hidden {
-  background: rgba(4, 8, 18, 0.92);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
-.bg-toggle-btn {
-  position: fixed;
-  top: 20px; right: 20px;
-  z-index: 1000;
-  background: rgba(255, 255, 255, 0.1);
-  border: var(--glass-border);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  color: var(--ink);
-  padding: 8px 16px;
-  border-radius: 999px;
-  font-family: var(--font-display);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), var(--glass-highlight);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.bg-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-}
-
-.wrap { max-width: 950px; margin: 0 auto; padding-inline: 20px; width: 100%; position: relative; z-index: 1; }
-h1, h2, h3 { font-family: var(--font-display); line-height: 1.25; margin: 0; }
-p { margin: 0; }
-a { text-decoration: none; color: inherit; }
-
-header.profile { padding-block: 50px 20px; text-align: center; display: grid; gap: 12px; place-items: center; }
-.avatar {
-  width: 96px; height: 96px; border-radius: 50%; border: 3px solid var(--accent);
-  background: var(--surface); box-shadow: 0 8px 25px var(--accent-soft), var(--glass-highlight);
-  overflow: hidden; display: grid; place-items: center;
-}
-.avatar img {
-  width: 100%; height: 100%; object-fit: cover;
-}
-.profile h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); color: #FFFFFF; }
-.profile h1 .highlight { color: #60A5FA; }
-.bio-desc { color: var(--muted); max-width: 500px; font-size: 1.05rem; }
-
-/* Thanh giao diện dính ở trên cùng khi cuộn trang */
-.filter-container { 
-  position: sticky;
-  top: 15px;
-  z-index: 999;
-  display: flex; 
-  justify-content: center; 
-  margin-bottom: 32px; 
-  overflow-x: auto; 
-  padding-block: 6px 12px;
-  scrollbar-width: none; 
-}
-.filter-container::-webkit-scrollbar { display: none; }
-
-.filter-tabs {
-  position: relative;
-  display: inline-flex;
-  background: rgba(15, 23, 42, 0.65);
-  border: var(--glass-border);
-  border-radius: 999px;
-  padding: 6px;
-  gap: 4px;
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), var(--glass-highlight);
-  white-space: nowrap;
-}
-
-.liquid-pill {
-  position: absolute;
-  top: 6px;
-  bottom: 6px;
-  left: 0;
-  width: 0;
-  background: rgba(255, 255, 255, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 999px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), var(--glass-highlight);
-  transition: all 0.45s cubic-bezier(0.25, 1, 0.5, 1);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.filter-btn {
-  position: relative;
-  z-index: 2;
-  background: transparent; 
-  border: none; 
-  color: var(--muted);
-  padding: 10px 22px; 
-  border-radius: 999px; 
-  font-weight: 600; 
-  font-size: 0.9rem;
-  cursor: pointer; 
-  transition: color 0.3s ease;
-  flex-shrink: 0;
-}
-.filter-btn:hover { color: #FFFFFF; }
-.filter-btn.active { color: #FFFFFF; }
-
-/* Khu vực chứa thẻ nội dung với hiệu ứng trượt ngang */
-main.content { 
-  padding-bottom: 50px; 
-  display: grid; 
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); 
-  gap: 20px; 
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
-}
-
-/* Các trạng thái hiệu ứng trượt ngang */
-main.content.slide-out-left {
-  transform: translateX(-50px);
-  opacity: 0;
-}
-
-main.content.slide-in-right {
-  transform: translateX(50px);
-  opacity: 0;
-}
-
-.card {
-  background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-  border: var(--glass-border);
-  box-shadow: var(--shadow-glass), var(--glass-highlight);
-  border-radius: var(--r);
-  padding: 24px; display: grid; gap: 14px;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
-}
-
-.card.is-hidden {
-  display: none !important;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-  background: rgba(15, 23, 42, 0.75);
-  box-shadow: 0 24px 50px 0 rgba(0, 0, 0, 0.6), var(--glass-highlight);
-  border-color: rgba(96, 165, 250, 0.4);
-}
-.card-header { display: flex; justify-content: space-between; align-items: center; }
-.badge {
-  display: inline-block; font-size: .75rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
-  padding: 5px 12px; border-radius: 999px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-.badge.mod { background: var(--accent-soft); color: #60A5FA; }
-.badge.rsp { background: var(--amber-soft); color: #FBBF24; }
-.badge.litematica { background: var(--purple-soft); color: #A78BFA; }
-.badge.map { background: var(--good-soft); color: #34D399; }
-
-.card h2 { font-size: 1.15rem; word-break: break-word; color: #FFFFFF; }
-.card p { color: var(--muted); font-size: 0.9rem; word-break: break-all; }
-.card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
-.version { font-size: 0.85rem; color: var(--muted); font-family: monospace; }
-.btn-dl {
-  background: var(--accent); color: var(--accent-ink); padding: 8px 16px; border-radius: 12px; font-weight: 600; font-size: 0.85rem;
-  transition: all 0.2s;
-  box-shadow: 0 4px 15px var(--accent-soft), var(--glass-highlight);
-}
-.btn-dl:hover { filter: brightness(1.15); transform: scale(1.03); }
-
-footer { color: var(--muted); font-size: .85rem; padding-block: 24px; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.08); }
-.loading { text-align: center; color: var(--muted); grid-column: 1 / -1; padding: 40px; font-weight: 500; }
+:root{color-scheme:dark;--bg:#090D16;--surface:rgba(255,255,255,0.06);--surface-hover:rgba(255,255,255,0.12);--ink:#F8FAFC;--muted:#94A3B8;--accent:#3B82F6;--accent-ink:#FFFFFF;--accent-soft:rgba(59,130,246,0.25);--amber:#F59E0B;--amber-soft:rgba(245,158,11,0.25);--good:#10B981;--good-soft:rgba(16,185,129,0.25);--purple:#8B5CF6;--purple-soft:rgba(139,92,246,0.25);--glass-border:1px solid rgba(255,255,255,0.18);--glass-highlight:inset 0 1px 0 0 rgba(255,255,255,0.35),inset 0 -1px 0 0 rgba(0,0,0,0.2);--shadow-glass:0 16px 40px 0 rgba(0,0,0,0.45);--font-display:"Lexend","Be Vietnam Pro",system-ui,sans-serif;--font-body:"Be Vietnam Pro",system-ui,-apple-system,sans-serif;--r:24px;}
+*,*::before,*::after{box-sizing:border-box;}
+body{margin:0;padding:0;font-family:var(--font-body);font-size:16px;line-height:1.6;background-color:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;overflow-x:hidden;}
+.bg-video{position:fixed;top:0;left:0;width:100vw;height:100vh;object-fit:cover;z-index:-2;transition:opacity 0.5s ease;}
+.bg-video.hidden{opacity:0;pointer-events:none;}
+.bg-overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(4,8,18,0.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:-1;transition:background 0.5s ease;}
+.bg-overlay.hidden{background:rgba(4,8,18,0.92);backdrop-filter:none;-webkit-backdrop-filter:none;}
+.bg-toggle-btn{position:fixed;top:20px;right:20px;z-index:1000;background:rgba(255,255,255,0.1);border:var(--glass-border);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:var(--ink);padding:8px 16px;border-radius:999px;font-family:var(--font-display);font-size:0.85rem;font-weight:600;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.3),var(--glass-highlight);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);display:flex;align-items:center;gap:6px;}
+.bg-toggle-btn:hover{background:rgba(255,255,255,0.2);transform:translateY(-2px);}
+.wrap{max-width:950px;margin:0 auto;padding-inline:20px;width:100%;position:relative;z-index:1;}
+h1,h2,h3{font-family:var(--font-display);line-height:1.25;margin:0;}
+p{margin:0;}
+a{text-decoration:none;color:inherit;}
+header.profile{padding-block:50px 20px;text-align:center;display:grid;gap:12px;place-items:center;}
+.avatar{width:96px;height:96px;border-radius:50%;border:3px solid var(--accent);background:var(--surface);box-shadow:0 8px 25px var(--accent-soft),var(--glass-highlight);overflow:hidden;display:grid;place-items:center;}
+.avatar img{width:100%;height:100%;object-fit:cover;}
+.profile h1{font-size:clamp(1.8rem,4vw,2.4rem);color:#FFFFFF;}
+.profile h1 .highlight{color:#60A5FA;}
+.bio-desc{color:var(--muted);max-width:500px;font-size:1.05rem;}
+.filter-container{position:sticky;top:15px;z-index:999;display:flex;justify-content:center;margin-bottom:32px;overflow-x:auto;padding-block:6px 12px;scrollbar-width:none;}
+.filter-container::-webkit-scrollbar{display:none;}
+.filter-tabs{position:relative;display:inline-flex;background:rgba(15,23,42,0.65);border:var(--glass-border);border-radius:999px;padding:6px;gap:4px;backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);box-shadow:0 20px 50px rgba(0,0,0,0.5),var(--glass-highlight);white-space:nowrap;}
+.liquid-pill{position:absolute;top:6px;bottom:6px;left:0;width:0;background:rgba(255,255,255,0.22);border:1px solid rgba(255,255,255,0.35);border-radius:999px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 8px 25px rgba(0,0,0,0.3),var(--glass-highlight);transition:all 0.45s cubic-bezier(0.25,1,0.5,1);pointer-events:none;z-index:1;}
+.filter-btn{position:relative;z-index:2;background:transparent;border:none;color:var(--muted);padding:10px 22px;border-radius:999px;font-weight:600;font-size:0.9rem;cursor:pointer;transition:color 0.3s ease;flex-shrink:0;}
+.filter-btn:hover{color:#FFFFFF;}
+.filter-btn.active{color:#FFFFFF;}
+main.content{padding-bottom:50px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px;position:relative;overflow:hidden;transition:transform 0.4s cubic-bezier(0.25,1,0.5,1),opacity 0.4s ease;}
+main.content.slide-out-left{transform:translateX(-50px);opacity:0;}
+main.content.slide-in-right{transform:translateX(50px);opacity:0;}
+.card{background:rgba(15,23,42,0.55);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:var(--glass-border);box-shadow:var(--shadow-glass),var(--glass-highlight);border-radius:var(--r);padding:24px;display:grid;gap:14px;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1),box-shadow 0.3s cubic-bezier(0.4,0,0.2,1),background 0.3s;}
+.card.is-hidden{display:none !important;}
+.card:hover{transform:translateY(-5px);background:rgba(15,23,42,0.75);box-shadow:0 24px 50px 0 rgba(0,0,0,0.6),var(--glass-highlight);border-color:rgba(96,165,250,0.4);}
+.card-header{display:flex;justify-content:space-between;align-items:center;}
+.badge{display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:5px 12px;border-radius:999px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);}
+.badge.mod{background:var(--accent-soft);color:#60A5FA;}
+.badge.rsp{background:var(--amber-soft);color:#FBBF24;}
+.badge.litematica{background:var(--purple-soft);color:#A78BFA;}
+.badge.map{background:var(--good-soft);color:#34D399;}
+.card h2{font-size:1.15rem;word-break:break-word;color:#FFFFFF;}
+.card p{color:var(--muted);font-size:0.9rem;word-break:break-all;}
+.card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:4px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);}
+.version{font-size:0.85rem;color:var(--muted);font-family:monospace;}
+.btn-dl{background:var(--accent);color:var(--accent-ink);padding:8px 16px;border-radius:12px;font-weight:600;font-size:0.85rem;transition:all 0.2s;box-shadow:0 4px 15px var(--accent-soft),var(--glass-highlight);}
+.btn-dl:hover{filter:brightness(1.15);transform:scale(1.03);}
+footer{color:var(--muted);font-size:.85rem;padding-block:24px;text-align:center;border-top:1px solid rgba(255,255,255,0.08);}
+.loading{text-align:center;color:var(--muted);grid-column:1 / -1;padding:40px;font-weight:500;}
 </style>
 </head>
 <body>
@@ -293,84 +96,99 @@ footer { color: var(--muted); font-size: .85rem; padding-block: 24px; text-align
 </footer>
 
 <script>
-const GITHUB_USER = 'chisaki167';
-const GITHUB_REPO = 'chisaki167.github.io'; 
+var currentIndex = 0;
+var GITHUB_USER = 'chisaki167';
+var GITHUB_REPO = 'chisaki167.github.io'; 
 
-const MANUAL_RSP_LIST = [
-  {
-    name: "RSP by chisaki167 (Nakano Miku).zip",
-    driveUrl: "https://drive.google.com/file/d/1FVI24eQCYtYzjeaYVLBPpwP7sfUlpPII/view?usp=drivesdk"
-  },
-  {
-    name: "RSP by chisaki167 (Alya).zip",
-    driveUrl: "https://drive.google.com/file/d/19JFlifbPNEAZx9t6iQ5lPh_Nerh6vY6z/view?usp=drivesdk"
-  },
-  {
-    name: "RSP by chisaki167 (Haimiya Mio).zip",
-    driveUrl: "https://drive.google.com/file/d/1jRp8GNE3T6n0ZrFtRuY9YcwudJ-fmxF3/view?usp=drivesdk"
-  }
+var MANUAL_RSP_LIST = [
+  { name: "RSP by chisaki167 (Nakano Miku).zip", driveUrl: "https://drive.google.com/file/d/1FVI24eQCYtYzjeaYVLBPpwP7sfUlpPII/view?usp=drivesdk" },
+  { name: "RSP by chisaki167 (Alya).zip", driveUrl: "https://drive.google.com/file/d/19JFlifbPNEAZx9t6iQ5lPh_Nerh6vY6z/view?usp=drivesdk" },
+  { name: "RSP by chisaki167 (Haimiya Mio).zip", driveUrl: "https://drive.google.com/file/d/1jRp8GNE3T6n0ZrFtRuY9YcwudJ-fmxF3/view?usp=drivesdk" }
 ];
 
-let currentIndex = 0;
+function convertDriveLink(url) {
+  var match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) return 'https://drive.google.com/uc?export=download&id=' + match[1];
+  return url;
+}
+
+function updateLiquidPill(btn) {
+  var pill = document.getElementById('liquidPill');
+  if (pill && btn) {
+    pill.style.left = btn.offsetLeft + 'px';
+    pill.style.width = btn.offsetWidth + 'px';
+  }
+}
 
 function toggleBackground() {
-  const video = document.getElementById('bgVideo');
-  const overlay = document.getElementById('bgOverlay');
-  const btn = document.getElementById('bgToggleBtn');
+  var v = document.getElementById('bgVideo');
+  var o = document.getElementById('bgOverlay');
+  var b = document.getElementById('bgToggleBtn');
 
-  video.classList.toggle('hidden');
-  overlay.classList.toggle('hidden');
+  v.classList.toggle('hidden');
+  o.classList.toggle('hidden');
 
-  const isHidden = video.classList.contains('hidden');
-  if (isHidden) {
-    btn.innerHTML = '<span>🎬 Nền: Tắt</span>';
+  if (v.classList.contains('hidden')) {
+    b.innerHTML = '<span>🎬 Nền: Tắt</span>';
     localStorage.setItem('bg_enabled', 'false');
   } else {
-    btn.innerHTML = '<span>🎬 Nền: Bật</span>';
+    b.innerHTML = '<span>🎬 Nền: Bật</span>';
     localStorage.setItem('bg_enabled', 'true');
   }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  const bgStatus = localStorage.getItem('bg_enabled');
-  if (bgStatus === 'false') {
-    const video = document.getElementById('bgVideo');
-    const overlay = document.getElementById('bgOverlay');
-    const btn = document.getElementById('bgToggleBtn');
-    video.classList.add('hidden');
-    overlay.classList.add('hidden');
-    btn.innerHTML = '<span>🎬 Nền: Tắt</span>';
-  }
+function filterItems(category, event) {
+  var clickedBtn = event.currentTarget;
+  var newIndex = parseInt(clickedBtn.getAttribute('data-index'));
   
-  const activeBtn = document.querySelector('.filter-btn.active');
-  if (activeBtn) {
-    updateLiquidPill(activeBtn);
-  }
-});
+  if (newIndex === currentIndex) return;
 
-function updateLiquidPill(btn) {
-  const pill = document.getElementById('liquidPill');
-  pill.style.left = btn.offsetLeft + 'px';
-  pill.style.width = btn.offsetWidth + 'px';
-}
+  var buttons = document.querySelectorAll('.filter-btn');
+  for (var k = 0; k < buttons.length; k++) buttons[k].classList.remove('active');
+  clickedBtn.classList.add('active');
 
-function convertDriveLink(url) {
-  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  if (match && match[1]) {
-    return `https://drive.google.com/uc?export=download&id=${match[1]}`;
-  }
-  return url;
+  updateLiquidPill(clickedBtn);
+
+  var grid = document.getElementById('itemGrid');
+  var dirClass = newIndex > currentIndex ? 'slide-out-left' : 'slide-in-right';
+  var enterClass = newIndex > currentIndex ? 'slide-in-right' : 'slide-out-left';
+
+  grid.classList.add(dirClass);
+
+  setTimeout(function() {
+    var cards = document.querySelectorAll('.card');
+    for (var m = 0; m < cards.length; m++) {
+      var card = cards[m];
+      if (category === 'all' || card.dataset.category === category) {
+        card.classList.remove('is-hidden');
+      } else {
+        card.classList.add('is-hidden');
+      }
+    }
+
+    grid.classList.remove(dirClass);
+    grid.classList.add(enterClass);
+    
+    void grid.offsetWidth;
+    grid.classList.remove('slide-in-right', 'slide-out-left');
+
+    currentIndex = newIndex;
+  }, 300);
 }
 
 async function fetchFolderContent(folderPath, category, badgeText, allowedExt) {
   try {
-    const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${folderPath}?per_page=100`;
-    const response = await fetch(apiUrl);
+    var apiUrl = 'https://api.github.com/repos/' + GITHUB_USER + '/' + GITHUB_REPO + '/contents/' + folderPath + '?per_page=100';
+    var response = await fetch(apiUrl);
     if (response.ok) {
-      const data = await response.json();
-      let list = [];
-      data.forEach(file => {
-        if (allowedExt.some(ext => file.name.endsWith(ext))) {
+      var data = await response.json();
+      var list = [];
+      data.forEach(function(file) {
+        var isAllowed = false;
+        for (var j = 0; j < allowedExt.length; j++) {
+          if (file.name.endsWith(allowedExt[j])) { isAllowed = true; break; }
+        }
+        if (isAllowed) {
           list.push({
             name: file.name,
             category: category,
@@ -382,104 +200,75 @@ async function fetchFolderContent(folderPath, category, badgeText, allowedExt) {
       });
       return list;
     }
-  } catch (err) {
-    console.error(`Lỗi quét thư mục ${folderPath}:`, err);
-  }
+  } catch (err) {}
   return [];
 }
 
 async function loadAllContent() {
-  const grid = document.getElementById('itemGrid');
-  let allItems = [];
+  var grid = document.getElementById('itemGrid');
+  var allItems = [];
 
-  const mods = await fetchFolderContent('mods', 'mod', 'Mod', ['.jar']);
+  var mods = await fetchFolderContent('mods', 'mod', 'Mod', ['.jar']);
+  var rsps = MANUAL_RSP_LIST.map(function(rsp) {
+    return {
+      name: rsp.name,
+      category: 'rsp',
+      badgeText: 'Resource Pack',
+      download_url: convertDriveLink(rsp.driveUrl),
+      size: null
+    };
+  });
+  var litematics = await fetchFolderContent('litematicas', 'litematica', 'Litematica', ['.litematic', '.zip']);
+  var maps = await fetchFolderContent('saves', 'map', 'Map', ['.zip']);
 
-  const rsps = MANUAL_RSP_LIST.map(rsp => ({
-    name: rsp.name,
-    category: 'rsp',
-    badgeText: 'Resource Pack',
-    download_url: convertDriveLink(rsp.driveUrl),
-    size: null
-  }));
-
-  const litematics = await fetchFolderContent('litematicas', 'litematica', 'Litematica', ['.litematic', '.zip']);
-
-  const maps = await fetchFolderContent('saves', 'map', 'Map', ['.zip']);
-
-  allItems = [...mods, ...rsps, ...litematics, ...maps];
+  allItems = allItems.concat(mods, rsps, litematics, maps);
 
   if (allItems.length === 0) {
     grid.innerHTML = '<div class="loading">Không tìm thấy tài nguyên nào.</div>';
     return;
   }
 
-  let htmlContent = '';
-  allItems.forEach(item => {
-    const displayName = item.name.substring(0, item.name.lastIndexOf('.')) || item.name;
-    const fileSizeMB = item.size ? (item.size / (1024 * 1024)).toFixed(1) : 'Google Drive';
+  var htmlContent = '';
+  for (var i = 0; i < allItems.length; i++) {
+    var item = allItems[i];
+    var displayName = item.name.substring(0, item.name.lastIndexOf('.')) || item.name;
+    var fileSizeMB = item.size ? (item.size / (1024 * 1024)).toFixed(1) : 'Google Drive';
 
-    htmlContent += `
-      <div class="card" data-category="${item.category}">
-        <div class="card-header">
-          <span class="badge ${item.category}">${item.badgeText}</span>
-          <span class="version">Java Edition</span>
-        </div>
-        <h2>${displayName}</h2>
-        <p>File: ${item.name}</p>
-        <div class="card-footer">
-          <span class="version">${fileSizeMB} ${item.size ? 'MB' : ''}</span>
-          <a href="${item.download_url}" class="btn-dl" target="_blank" download>Tải xuống →</a>
-        </div>
-      </div>
-    `;
-  });
+    htmlContent += '\
+      <div class="card" data-category="' + item.category + '">\
+        <div class="card-header">\
+          <span class="badge ' + item.category + '">' + item.badgeText + '</span>\
+          <span class="version">Java Edition</span>\
+        </div>\
+        <h2>' + displayName + '</h2>\
+        <p>File: ' + item.name + '</p>\
+        <div class="card-footer">\
+          <span class="version">' + fileSizeMB + ' ' + (item.size ? 'MB' : '') + '</span>\
+          <a href="' + item.download_url + '" class="btn-dl" target="_blank" download>Tải xuống →</a>\
+        </div>\
+      </div>\
+    ';
+  }
 
   grid.innerHTML = htmlContent;
 }
 
-// Hiệu ứng trượt ngang khi chuyển tab
-function filterItems(category, event) {
-  const clickedBtn = event.currentTarget;
-  const newIndex = parseInt(clickedBtn.getAttribute('data-index'));
+window.addEventListener('DOMContentLoaded', function() {
+  var bgStatus = localStorage.getItem('bg_enabled');
+  if (bgStatus === 'false') {
+    var v = document.getElementById('bgVideo');
+    var o = document.getElementById('bgOverlay');
+    var b = document.getElementById('bgToggleBtn');
+    v.classList.add('hidden');
+    o.classList.add('hidden');
+    b.innerHTML = '<span>🎬 Nền: Tắt</span>';
+  }
   
-  if (newIndex === currentIndex) return;
+  var activeBtn = document.querySelector('.filter-btn.active');
+  if (activeBtn) updateLiquidPill(activeBtn);
 
-  const buttons = document.querySelectorAll('.filter-btn');
-  buttons.forEach(btn => btn.classList.remove('active'));
-  clickedBtn.classList.add('active');
-
-  updateLiquidPill(clickedBtn);
-
-  const grid = document.getElementById('itemGrid');
-  
-  // Xác định hướng trượt (Sang trái hay sang phải)
-  const directionClass = newIndex > currentIndex ? 'slide-out-left' : 'slide-in-right';
-  const enterClass = newIndex > currentIndex ? 'slide-in-right' : 'slide-out-left';
-
-  grid.classList.add(directionClass);
-
-  setTimeout(() => {
-    const cards = document.querySelectorAll('.card');
-    cards.forEach(card => {
-      if (category === 'all' || card.dataset.category === category) {
-        card.classList.remove('is-hidden');
-      } else {
-        card.classList.add('is-hidden');
-      }
-    });
-
-    grid.classList.remove(directionClass);
-    grid.classList.add(enterClass);
-    
-    // Đưa khung chứa về vị trí trung tâm mượt mà
-    void grid.offsetWidth;
-    grid.classList.remove('slide-in-right', 'slide-out-left');
-
-    currentIndex = newIndex;
-  }, 300);
-}
-
-loadAllContent();
+  loadAllContent();
+});
 </script>
 
 </body>
