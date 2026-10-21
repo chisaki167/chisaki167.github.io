@@ -164,4 +164,4 @@ window.addEventListener('DOMContentLoaded', function() {
 
   initLiquidGlassInteractions();
   loadAllContent();
-});
+}); 
