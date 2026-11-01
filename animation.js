@@ -15,15 +15,29 @@ function updateLiquidPill(b) {
 }
 
 function toggleBackground() {
-  var v = document.getElementById('bgVideo'), o = document.getElementById('bgOverlay'), b = document.getElementById('bgToggleBtn');
-  v.classList.toggle('hidden');
-  o.classList.toggle('hidden');
+  const v = document.getElementById('bgVideo');
+  const o = document.getElementById('bgOverlay');
+  const b = document.getElementById('bgToggleBtn');
+  
+  if (!v || !o || !b) return;
+
+  
   if (v.classList.contains('hidden')) {
-    b.innerHTML = '<span>🎬 Nền: Tắt</span>';
-    localStorage.setItem('bg_enabled', 'false');
+    v.classList.remove('hidden');
+    o.classList.remove('hidden');
+    
+    
+    v.muted = false; 
+    v.volume = 1.0;  
+    v.play().catch(err => console.log("Trình duyệt chặn phát tự động:", err));
+    
+
+    b.innerHTML = '🎬 Nền: Bật';
   } else {
-    b.innerHTML = '<span>🎬 Nền: Bật</span>';
-    localStorage.setItem('bg_enabled', 'true');
+    v.classList.add('hidden');
+    o.classList.add('hidden');
+    v.pause(); 
+    b.innerHTML = '🎬 Nền: Tắt';
   }
 }
 
@@ -38,7 +52,6 @@ function initCardSpotlight() {
   });
 }
 
-/* ĐIỀU CHỈNH TƯƠNG TÁC CHUYỂN ĐỘNG LỎNG (LIQUID GLASS) */
 function initLiquidGlassInteractions() {
   var glassNav = document.querySelector('.glassContainer');
   var displacementMap = document.getElementById('glassDisplacement');
