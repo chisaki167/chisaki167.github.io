@@ -1,4 +1,13 @@
 var currentIndex = 0, currentCategory = 'all', GITHUB_USER = 'chisaki167', GITHUB_REPO = 'chisaki167.github.io';
+var searchTimeout;
+
+function debounce(func, wait) {
+  return function() {
+    var context = this, args = arguments;
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(function() { func.apply(context, args); }, wait);
+  };
+}
 
 function updateLiquidPill(b) {
   var p = document.getElementById('liquidPill');
@@ -22,35 +31,6 @@ function updateLiquidPill(b) {
   }
 }
 
-function initCardSpotlight() {
-  var c = document.querySelectorAll('.card');
-  c.forEach(function(d) {
-    d.addEventListener('mousemove', function(e) {
-      var r = d.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-      d.style.setProperty('--mouse-x', x + 'px');
-      d.style.setProperty('--mouse-y', y + 'px');
-    });
-  });
-}
-
-function initLiquidGlassInteractions() {
-  var glassNav = document.querySelector('.glassContainer');
-  var displacementMap = document.getElementById('glassDisplacement');
-
-  if (glassNav && displacementMap) {
-    glassNav.addEventListener('mousemove', function(e) {
-      var rect = glassNav.getBoundingClientRect();
-      var relX = (e.clientX - rect.left) / rect.width;
-      var scaleVal = 6 + Math.sin(relX * Math.PI) * 12;
-      displacementMap.setAttribute('scale', scaleVal);
-    });
-
-    glassNav.addEventListener('mouseleave', function() {
-      displacementMap.setAttribute('scale', '8');
-    });
-  }
-}
-
 function applyFilters() {
   var q = document.getElementById('searchInput').value.toLowerCase().trim(), cards = document.querySelectorAll('.card'), vi = 0;
   
@@ -59,10 +39,6 @@ function applyFilters() {
     
     if (mc && ms) {
       c.classList.remove('is-hidden');
-      c.classList.remove('fade-in-anim');
-      void c.offsetWidth;
-      c.classList.add('fade-in-anim');
-      c.style.animationDelay = (vi * 0.05) + 's';
       vi++;
     } else {
       c.classList.add('is-hidden');
@@ -74,12 +50,10 @@ function applyFilters() {
   if (vi === 1) grid.classList.add('layout-1');
   else if (vi === 2) grid.classList.add('layout-2');
   else if (vi === 3) grid.classList.add('layout-3');
-
-  initCardSpotlight();
 }
 
 function handleSearch() {
-  applyFilters();
+  debounce(applyFilters, 250)();
 }
 
 function filterItems(cat, e) {
@@ -89,17 +63,10 @@ function filterItems(cat, e) {
   for (var k = 0; k < btns.length; k++) btns[k].classList.remove('active');
   cb.classList.add('active');
   updateLiquidPill(cb);
-  var g = document.getElementById('itemGrid'), dc = ni > currentIndex ? 'slide-out-left' : 'slide-in-right', ec = ni > currentIndex ? 'slide-in-right' : 'slide-out-left';
-  g.classList.add(dc);
+  
   currentCategory = cat;
-  setTimeout(function() {
-    applyFilters();
-    g.classList.remove(dc);
-    g.classList.add(ec);
-    void g.offsetWidth;
-    g.classList.remove('slide-in-right', 'slide-out-left');
-    currentIndex = ni; 
-  }, 250);
+  applyFilters();
+  currentIndex = ni; 
 }
 
 function findFolder(nodes, targetName) {
@@ -114,7 +81,6 @@ function findFolder(nodes, targetName) {
 async function fetchAllFiles() {
   var branches = ['main', 'master'];
   
-  // Chiến lược 1: Dùng jsDelivr (Nhanh, không giới hạn)
   for (var b = 0; b < branches.length; b++) {
     try {
       var api = 'https://data.jsdelivr.com/v1/packages/gh/' + GITHUB_USER + '/' + GITHUB_REPO + '@' + branches[b];
@@ -156,11 +122,10 @@ async function fetchAllFiles() {
       
       if (allItems.length > 0) return allItems; 
     } catch (err) {
-      console.warn('jsDelivr thất bại, thử cách khác...', err);
+      console.warn('Lỗi fetch:', err);
     }
   }
 
-  // Chiến lược 2: Dùng GitHub API (Dự phòng nếu jsDelivr không hoạt động)
   var fallbackItems = [];
   async function fetchFolderContent(fp, cat, bt, ext) {
     try {
@@ -195,21 +160,21 @@ async function fetchAllFiles() {
 
 async function loadAllContent() {
   var g = document.getElementById('itemGrid');
-  g.innerHTML = '<div class="loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>';
+  g.innerHTML = '<div class="loading">Đang tải dữ liệu...</div>';
   
   var allItems = await fetchAllFiles();
 
   if (!allItems) {
     g.innerHTML = `
-      <div class="loading" style="color: #EF4444; display: flex; flex-direction: column; align-items: center; gap: 10px;">
-        <p><i class="fa-solid fa-triangle-exclamation"></i> Lỗi kết nối API. Vui lòng kiểm tra lại tên Repo hoặc thử lại sau.</p>
-        <button onclick="loadAllContent()" style="padding: 8px 16px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-family: var(--font-body); font-weight: 600;">Thử lại</button>
+      <div class="loading" style="color: #EF4444;">
+        <p>Lỗi kết nối API.</p>
+        <button onclick="loadAllContent()" style="padding: 8px 16px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px;">Thử lại</button>
       </div>`;
     return;
   }
 
   if (allItems.length === 0) {
-    g.innerHTML = '<div class="loading">Không tìm thấy tài nguyên nào trong các thư mục (mods, rsp, litematicas, saves).</div>';
+    g.innerHTML = '<div class="loading">Không tìm thấy tài nguyên nào.</div>';
     return;
   }
 
@@ -232,35 +197,26 @@ window.addEventListener('DOMContentLoaded', function() {
     if (ca) updateLiquidPill(ca);
   });
 
-  initLiquidGlassInteractions();
   loadAllContent();
 }); 
 
 function toggleFullscreen() {
   if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen().catch(err => {
-      alert(`Không thể bật chế độ toàn màn hình: ${err.message}`);
-    });
+    document.documentElement.requestFullscreen().catch(err => {});
   } else {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    }
+    if (document.exitFullscreen) document.exitFullscreen();
   }
 }
 
 document.addEventListener('fullscreenchange', () => {
   const btn = document.getElementById('fullscreenBtn');
-  if (btn) {
-    btn.innerHTML = document.fullscreenElement ? '🛈 Toàn màn hình: Bật' : '🛈 Toàn màn hình: Tắt';
-  }
+  if (btn) btn.innerHTML = document.fullscreenElement ? '🛈 Toàn màn hình: Bật' : '🛈 Toàn màn hình: Tắt';
 });
 
 (function () {
   var KEY = 'chisaki167_settings';
 
-  function read() {
-    try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
-  }
+  function read() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
   function write(patch) {
     var s = Object.assign({}, read(), patch);
     try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
@@ -296,7 +252,7 @@ document.addEventListener('fullscreenchange', () => {
 .__sf_act{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;border-radius:14px;background:rgba(59,130,246,.15);border:1px solid #3B82F6;color:#3B82F6;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s ease}
 .__sf_act:hover{background:#3B82F6;color:#fff}
 .__sf_ft{padding-top:14px;border-top:1px solid rgba(255,255,255,.1);text-align:center;font-size:.72rem;color:#94A3B8}
-body.glass-disabled .card,body.glass-disabled .lesson-card,body.glass-disabled .option-box,body.glass-disabled .api-key-box,body.glass-disabled .quick-input-area,body.glass-disabled .conversation-box,body.glass-disabled .math-box,body.glass-disabled .avatar{rotate:none!important;will-change:auto!important}
+body.glass-disabled .card,body.glass-disabled .lesson-card,body.glass-disabled .option-box,body.glass-disabled .api-key-box,body.glass-disabled .quick-input-area,body.glass-disabled .conversation-box,body.glass-disabled .math-box,body.glass-disabled .avatar{transform:none!important;will-change:auto!important}
 body.light-mode .__sf_btn{background:rgba(255,255,255,.9);border-color:rgba(15,23,42,.12);color:#0f172a;box-shadow:0 8px 20px rgba(15,23,42,.12),inset 0 1px 0 rgba(255,255,255,.9)}
 body.light-mode .__sf_btn:hover{background:#fff}
 body.light-mode .__sf_btn.active{background:#3B82F6;border-color:#3B82F6;color:#fff}
@@ -321,6 +277,7 @@ body.light-mode .__sf_ft{border-top-color:rgba(15,23,42,.1);color:#64748b}
     var s = read();
     var bg = s.bgEnabled === true;
     var glass = s.glassEnabled !== false;
+    var motion = s.motionEnabled !== false;
     var theme = s.theme === 'light' ? 'light' : 'dark';
 
     document.body.classList.toggle('light-mode', theme === 'light');
@@ -345,19 +302,23 @@ body.light-mode .__sf_ft{border-top-color:rgba(15,23,42,.1);color:#64748b}
     }
     if (b) b.innerHTML = bg ? '🎬 Nền: Bật' : '🎬 Nền: Tắt';
     document.body.classList.toggle('glass-disabled', !glass);
+    document.body.classList.toggle('no-effects', !motion);
 
     var bgSw = document.getElementById('__sf_bg');
-    if (bgSw) { bgSw.classList.toggle('active', bg); bgSw.setAttribute('aria-checked', String(bg)); }
+    if (bgSw) { bgSw.classList.toggle('active', bg); }
     var glSw = document.getElementById('__sf_glass');
-    if (glSw) { glSw.classList.toggle('active', glass); glSw.setAttribute('aria-checked', String(glass)); }
+    if (glSw) { glSw.classList.toggle('active', glass); }
+    var mtSw = document.getElementById('__sf_motion');
+    if (mtSw) { mtSw.classList.toggle('active', motion); }
     var thSw = document.getElementById('__sf_theme');
-    if (thSw) { thSw.classList.toggle('active', theme === 'light'); thSw.setAttribute('aria-checked', String(theme === 'light')); }
+    if (thSw) { thSw.classList.toggle('active', theme === 'light'); }
     var thIcon = document.getElementById('__sf_theme_icon');
     if (thIcon) thIcon.className = theme === 'light' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
   }
 
   function toggleBG() { var s = read(); write({ bgEnabled: !(s.bgEnabled === true) }); applySettings(); }
   function toggleGlass() { var s = read(); write({ glassEnabled: s.glassEnabled === false }); applySettings(); }
+  function toggleMotion() { var s = read(); write({ motionEnabled: s.motionEnabled === false }); applySettings(); }
   function toggleTheme() { var s = read(); write({ theme: s.theme === 'light' ? 'dark' : 'light' }); applySettings(); }
   
   function toggleFullscreen() {
@@ -380,95 +341,63 @@ body.light-mode .__sf_ft{border-top-color:rgba(15,23,42,.1);color:#64748b}
     if (!window.matchMedia || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    var selector = '.card, .lesson-card, .option-box, .api-key-box, .quick-input-area, .conversation-box, .math-box, .avatar, [class*="card"], [class*="box"], [style*="backdrop-filter"]';
-    var cards = document.querySelectorAll(selector);
+    var selector = '.card, .lesson-card, .option-box, .api-key-box, .quick-input-area, .conversation-box, .math-box, .avatar';
     var activeCard = null;
     var rafId = null;
-
-    cards.forEach(function(card) {
-      card._state = { tx: 0, ty: 0, cx: 0, cy: 0, lx: 50, ly: 50, tlx: 50, tly: 50, active: false };
-    });
-
-    function lerp(start, end, amt) { return (1 - amt) * start + amt * end; }
-
-    function update() {
-      var needsAnotherFrame = false;
-
-      cards.forEach(function(card) {
-        var s = card._state;
-        if (!s.active && Math.abs(s.cx) < 0.05 && Math.abs(s.cy) < 0.05) return;
-
-        s.cx = lerp(s.cx, s.tx, 0.12);
-        s.cy = lerp(s.cy, s.ty, 0.12);
-        s.lx = lerp(s.lx, s.tlx, 0.15);
-        s.ly = lerp(s.ly, s.tly, 0.15);
-
-        card.style.setProperty('--glass-tilt-x', s.cx.toFixed(2) + 'deg');
-        card.style.setProperty('--glass-tilt-y', s.cy.toFixed(2) + 'deg');
-        card.style.setProperty('--mouse-x', s.lx.toFixed(2) + '%');
-        card.style.setProperty('--mouse-y', s.ly.toFixed(2) + '%');
-
-        if (Math.abs(s.cx - s.tx) > 0.05 || Math.abs(s.cy - s.ty) > 0.05) {
-          needsAnotherFrame = true;
-        }
-      });
-
-      if (needsAnotherFrame) {
-        rafId = requestAnimationFrame(update);
-      } else {
-        rafId = null;
-      }
-    }
-
-    function triggerUpdate() {
-      if (!rafId) rafId = requestAnimationFrame(update);
-    }
+    var mouseX = 0, mouseY = 0;
 
     document.addEventListener('pointermove', function(e) {
-      if (document.body.classList.contains('glass-disabled')) return;
+      if (document.body.classList.contains('glass-disabled') || document.body.classList.contains('no-effects')) return;
+      
       var card = e.target.closest(selector);
-
-      if (activeCard && activeCard !== card) {
-        activeCard._state.active = false;
-        activeCard._state.tx = 0;
-        activeCard._state.ty = 0;
+      if (card !== activeCard) {
+        if (activeCard) {
+          activeCard.style.setProperty('--glass-tilt-x', '0deg');
+          activeCard.style.setProperty('--glass-tilt-y', '0deg');
+        }
+        activeCard = card;
       }
-      activeCard = card;
+      
       if (!activeCard) return;
 
-      var rect = activeCard.getBoundingClientRect();
-      if (!rect.width || !rect.height) return;
+      mouseX = e.clientX;
+      mouseY = e.clientY;
 
-      var x = (e.clientX - rect.left) / rect.width;
-      var y = (e.clientY - rect.top) / rect.height;
-      var s = activeCard._state;
+      if (rafId) return;
 
-      s.active = true;
-      s.tx = Math.max(-3, Math.min(3, (x - 0.5) * 6));
-      s.ty = Math.max(-3, Math.min(3, (y - 0.5) * -6));
-      s.tlx = x * 100;
-      s.tly = y * 100;
+      rafId = requestAnimationFrame(function() {
+        rafId = null;
+        if (!activeCard) return;
 
-      triggerUpdate();
+        var rect = activeCard.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+
+        var x = (mouseX - rect.left) / rect.width;
+        var y = (mouseY - rect.top) / rect.height;
+        
+        var tiltX = Math.max(-1.5, Math.min(1.5, (x - 0.5) * 3));
+        var tiltY = Math.max(-1.5, Math.min(1.5, (y - 0.5) * -3));
+
+        activeCard.style.setProperty('--glass-tilt-x', tiltX.toFixed(2) + 'deg');
+        activeCard.style.setProperty('--glass-tilt-y', tiltY.toFixed(2) + 'deg');
+        activeCard.style.setProperty('--mouse-x', (x * 100).toFixed(2) + '%');
+        activeCard.style.setProperty('--mouse-y', (y * 100).toFixed(2) + '%');
+      });
     }, { passive: true });
 
     document.addEventListener('pointerout', function(e) {
       if (!activeCard || activeCard.contains(e.relatedTarget)) return;
-      activeCard._state.active = false;
-      activeCard._state.tx = 0;
-      activeCard._state.ty = 0;
+      activeCard.style.setProperty('--glass-tilt-x', '0deg');
+      activeCard.style.setProperty('--glass-tilt-y', '0deg');
       activeCard = null;
-      triggerUpdate();
     }, { passive: true });
 
     window.addEventListener('blur', function() {
       if (activeCard) {
-        activeCard._state.active = false;
-        activeCard._state.tx = 0;
-        activeCard._state.ty = 0;
+        activeCard.style.setProperty('--glass-tilt-x', '0deg');
+        activeCard.style.setProperty('--glass-tilt-y', '0deg');
         activeCard = null;
       }
-      triggerUpdate();
     });
   }
 
@@ -496,11 +425,13 @@ body.light-mode .__sf_ft{border-top-color:rgba(15,23,42,.1);color:#64748b}
       '<button class="__sf_close" type="button" aria-label="Đóng"><i class="fa-solid fa-xmark"></i></button></div>' +
       '<div class="__sf_body">' +
       '<div class="__sf_row"><div class="__sf_lbl"><i id="__sf_theme_icon" class="fa-solid fa-moon"></i><span>Giao diện sáng</span></div>' +
-      '<button class="__sf_sw" id="__sf_theme" type="button" role="switch" aria-checked="false"></button></div>' +
+      '<button class="__sf_sw" id="__sf_theme" type="button" role="switch"></button></div>' +
       '<div class="__sf_row"><div class="__sf_lbl"><i class="fa-solid fa-film"></i><span>Nền video</span></div>' +
-      '<button class="__sf_sw" id="__sf_bg" type="button" role="switch" aria-checked="false"></button></div>' +
-      '<div class="__sf_row"><div class="__sf_lbl"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Hiệu ứng kính</span></div>' +
-      '<button class="__sf_sw" id="__sf_glass" type="button" role="switch" aria-checked="true"></button></div>' +
+      '<button class="__sf_sw" id="__sf_bg" type="button" role="switch"></button></div>' +
+      '<div class="__sf_row"><div class="__sf_lbl"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Hiệu ứng kính 3D</span></div>' +
+      '<button class="__sf_sw" id="__sf_glass" type="button" role="switch"></button></div>' +
+      '<div class="__sf_row"><div class="__sf_lbl"><i class="fa-solid fa-bolt"></i><span>Hiệu ứng chuyển động</span></div>' +
+      '<button class="__sf_sw" id="__sf_motion" type="button" role="switch"></button></div>' +
       '<button class="__sf_act" id="__sf_fs" type="button"><i class="fa-solid fa-expand"></i><span>Bật toàn màn hình</span></button>' +
       '</div><div class="__sf_ft">chisaki167 · 2025</div>';
     document.body.appendChild(panel);
@@ -509,6 +440,7 @@ body.light-mode .__sf_ft{border-top-color:rgba(15,23,42,.1);color:#64748b}
     panel.querySelector('#__sf_theme').addEventListener('click', toggleTheme);
     panel.querySelector('#__sf_bg').addEventListener('click', toggleBG);
     panel.querySelector('#__sf_glass').addEventListener('click', toggleGlass);
+    panel.querySelector('#__sf_motion').addEventListener('click', toggleMotion);
     panel.querySelector('#__sf_fs').addEventListener('click', toggleFullscreen);
 
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') togglePanel(false); });
@@ -522,6 +454,7 @@ body.light-mode .__sf_ft{border-top-color:rgba(15,23,42,.1);color:#64748b}
   window.toggleSettingsPanel = togglePanel;
   window.toggleBackground = toggleBG;
   window.toggleGlass = toggleGlass;
+  window.toggleMotion = toggleMotion;
   window.toggleTheme = toggleTheme;
   window.toggleFullscreen = toggleFullscreen;
   window.syncBackgroundTheme = applySettings;

@@ -25,15 +25,14 @@
 
 <button class="bg-toggle-btn" id="fullscreenBtn" type="button" onclick="toggleFullscreen()">🛈 Toàn màn hình: Tắt</button>
 
-<video class="bg-video" id="bgVideo" autoplay muted loop playsinline>
+<video class="bg-video" id="bgVideo" autoplay muted loop playsinline preload="none">
   <source src="background.mp4" type="video/mp4">
-  Trình duyệt của bạn không hỗ trợ thẻ video.
 </video>
 <div class="bg-overlay" id="bgOverlay"></div>
 
 <header class="profile wrap">
   <div class="avatar">
-    <img src="ava.jpg" alt="Avatar">
+    <img src="ava.jpg" alt="Avatar" width="72" height="72" loading="lazy">
   </div>
   <h1>chisaki167 <span class="highlight">Bio</span></h1>
   <p class="bio-desc">Kho lưu trữ cá nhân chuyên chia sẻ Mods, ResourcePacks, Litematica và Maps cho Minecraft Java.</p>
@@ -63,7 +62,6 @@
   Minecraft Java  ·  Github by chisaki167  ·  Bản thử nghiệm
 </footer>
 
-
-<script src="animation.js"></script>
+<script src="animation.js" defer></script>
 </body>
 </html>
