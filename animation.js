@@ -14,30 +14,6 @@ function updateLiquidPill(b) {
   }
 }
 
-function toggleBackground() {
-  const v = document.getElementById('bgVideo');
-  const o = document.getElementById('bgOverlay');
-  const b = document.getElementById('bgToggleBtn');
-  
-  if (!v || !o || !b) return;
-
-  if (v.classList.contains('hidden')) {
-    v.classList.remove('hidden');
-    o.classList.remove('hidden');
-    
-    v.muted = false; 
-    v.volume = 1.0;  
-    v.play().catch(err => console.log("Trình duyệt chặn phát tự động:", err));
-    
-    b.innerHTML = '🎬 Nền: Bật';
-  } else {
-    v.classList.add('hidden');
-    o.classList.add('hidden');
-    v.pause(); 
-    b.innerHTML = '🎬 Nền: Tắt';
-  }
-}
-
 function initCardSpotlight() {
   var c = document.querySelectorAll('.card');
   c.forEach(function(d) {
@@ -69,8 +45,10 @@ function initLiquidGlassInteractions() {
 
 function applyFilters() {
   var q = document.getElementById('searchInput').value.toLowerCase().trim(), cards = document.querySelectorAll('.card'), vi = 0;
+  
   for (var m = 0; m < cards.length; m++) {
     var c = cards[m], t = c.querySelector('h2').innerText.toLowerCase(), f = c.querySelector('p').innerText.toLowerCase(), mc = (currentCategory === 'all' || c.dataset.category === currentCategory), ms = (q === '' || t.indexOf(q) !== -1 || f.indexOf(q) !== -1);
+    
     if (mc && ms) {
       c.classList.remove('is-hidden');
       c.classList.remove('fade-in-anim');
@@ -82,6 +60,13 @@ function applyFilters() {
       c.classList.add('is-hidden');
     }
   }
+
+  var grid = document.getElementById('itemGrid');
+  grid.classList.remove('layout-1', 'layout-2', 'layout-3');
+  if (vi === 1) grid.classList.add('layout-1');
+  else if (vi === 2) grid.classList.add('layout-2');
+  else if (vi === 3) grid.classList.add('layout-3');
+
   initCardSpotlight();
 }
 
@@ -186,109 +171,11 @@ function toggleFullscreen() {
   }
 }
 
-function syncBackgroundTheme() {
-  const v = document.getElementById('bgVideo');
-  const o = document.getElementById('bgOverlay');
-  const b = document.getElementById('bgToggleBtn');
-
-  if (!v || !o || !b) return;
-
-  const enabled = !v.classList.contains('hidden');
-  document.body.classList.toggle('background-enabled', enabled);
-  o.classList.toggle('hidden', !enabled);
-  b.innerHTML = enabled ? '🎬 Nền: Bật' : '🎬 Nền: Tắt';
-  if (!enabled) v.pause();
-}
-
-function toggleBackground() {
-  const v = document.getElementById('bgVideo');
-  const o = document.getElementById('bgOverlay');
-  const b = document.getElementById('bgToggleBtn');
-
-  if (!v || !o || !b) return;
-
-  const enabled = v.classList.contains('hidden');
-  v.classList.toggle('hidden', !enabled);
-  o.classList.toggle('hidden', !enabled);
-  document.body.classList.toggle('background-enabled', enabled);
-
-  if (enabled) {
-    v.muted = false;
-    v.volume = 1.0;
-    const playPromise = v.play();
-    if (playPromise && typeof playPromise.catch === 'function') {
-      playPromise.catch(err => console.log('Trình duyệt chặn phát tự động:', err));
-    }
-    b.innerHTML = '🎬 Nền: Bật';
-  } else {
-    v.pause();
-    b.innerHTML = '🎬 Nền: Tắt';
-  }
-}
-
 document.addEventListener('fullscreenchange', () => {
   const btn = document.getElementById('fullscreenBtn');
   if (btn) {
     btn.innerHTML = document.fullscreenElement ? '🛈 Toàn màn hình: Bật' : '🛈 Toàn màn hình: Tắt';
   }
-});
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', syncBackgroundTheme, { once: true });
-} else {
-  syncBackgroundTheme();
-}
-
-let activeCard = null;
-let glassFrame = 0;
-let pointerX = 0;
-let pointerY = 0;
-const glassSelector = '.card, .lesson-card, .option-box, .api-key-box, .quick-input-area, .conversation-box, .math-box, .avatar';
-
-function resetGlassCard(card) {
-  if (!card) return;
-  card.style.setProperty('--glass-tilt-x', '0deg');
-  card.style.setProperty('--glass-tilt-y', '0deg');
-}
-
-document.addEventListener('pointermove', event => {
-  if (document.body.classList.contains('glass-disabled')) return;
-  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-
-  const card = event.target.closest(glassSelector);
-  if (card !== activeCard) {
-    resetGlassCard(activeCard);
-    activeCard = card;
-  }
-  if (!activeCard) return;
-
-  pointerX = event.clientX;
-  pointerY = event.clientY;
-  if (glassFrame) return;
-
-  glassFrame = requestAnimationFrame(() => {
-    glassFrame = 0;
-    if (!activeCard) return;
-    const rect = activeCard.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
-    const x = (pointerX - rect.left) / rect.width - 0.5;
-    const y = (pointerY - rect.top) / rect.height - 0.5;
-    const tiltX = Math.max(-3, Math.min(3, x * 6));
-    const tiltY = Math.max(-3, Math.min(3, y * -6));
-    activeCard.style.setProperty('--glass-tilt-x', `${tiltX.toFixed(2)}deg`);
-    activeCard.style.setProperty('--glass-tilt-y', `${tiltY.toFixed(2)}deg`);
-  });
-}, { passive: true });
-
-document.addEventListener('pointerout', event => {
-  if (!activeCard || activeCard.contains(event.relatedTarget)) return;
-  resetGlassCard(activeCard);
-  activeCard = null;
-}, { passive: true });
-
-window.addEventListener('blur', () => {
-  resetGlassCard(activeCard);
-  activeCard = null;
 });
 
 (function () {
@@ -412,6 +299,102 @@ body.light-mode .__sf_ft{border-top-color:rgba(15,23,42,.1);color:#64748b}
     if (bt) bt.classList.toggle('active', open);
   }
 
+  function initLiquidGlassTilt() {
+    if (!window.matchMedia || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var selector = '.card, .lesson-card, .option-box, .api-key-box, .quick-input-area, .conversation-box, .math-box, .avatar, [class*="card"], [class*="box"], [style*="backdrop-filter"]';
+    var cards = document.querySelectorAll(selector);
+    var activeCard = null;
+    var rafId = null;
+
+    cards.forEach(function(card) {
+      card._state = { tx: 0, ty: 0, cx: 0, cy: 0, lx: 50, ly: 50, tlx: 50, tly: 50, active: false };
+    });
+
+    function lerp(start, end, amt) { return (1 - amt) * start + amt * end; }
+
+    function update() {
+      var needsAnotherFrame = false;
+
+      cards.forEach(function(card) {
+        var s = card._state;
+        if (!s.active && Math.abs(s.cx) < 0.05 && Math.abs(s.cy) < 0.05) return;
+
+        s.cx = lerp(s.cx, s.tx, 0.12);
+        s.cy = lerp(s.cy, s.ty, 0.12);
+        s.lx = lerp(s.lx, s.tlx, 0.15);
+        s.ly = lerp(s.ly, s.tly, 0.15);
+
+        card.style.setProperty('--glass-tilt-x', s.cx.toFixed(2) + 'deg');
+        card.style.setProperty('--glass-tilt-y', s.cy.toFixed(2) + 'deg');
+        card.style.setProperty('--mouse-x', s.lx.toFixed(2) + '%');
+        card.style.setProperty('--mouse-y', s.ly.toFixed(2) + '%');
+
+        if (Math.abs(s.cx - s.tx) > 0.05 || Math.abs(s.cy - s.ty) > 0.05) {
+          needsAnotherFrame = true;
+        }
+      });
+
+      if (needsAnotherFrame) {
+        rafId = requestAnimationFrame(update);
+      } else {
+        rafId = null;
+      }
+    }
+
+    function triggerUpdate() {
+      if (!rafId) rafId = requestAnimationFrame(update);
+    }
+
+    document.addEventListener('pointermove', function(e) {
+      if (document.body.classList.contains('glass-disabled')) return;
+      var card = e.target.closest(selector);
+
+      if (activeCard && activeCard !== card) {
+        activeCard._state.active = false;
+        activeCard._state.tx = 0;
+        activeCard._state.ty = 0;
+      }
+      activeCard = card;
+      if (!activeCard) return;
+
+      var rect = activeCard.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+
+      var x = (e.clientX - rect.left) / rect.width;
+      var y = (e.clientY - rect.top) / rect.height;
+      var s = activeCard._state;
+
+      s.active = true;
+      s.tx = Math.max(-3, Math.min(3, (x - 0.5) * 6));
+      s.ty = Math.max(-3, Math.min(3, (y - 0.5) * -6));
+      s.tlx = x * 100;
+      s.tly = y * 100;
+
+      triggerUpdate();
+    }, { passive: true });
+
+    document.addEventListener('pointerout', function(e) {
+      if (!activeCard || activeCard.contains(e.relatedTarget)) return;
+      activeCard._state.active = false;
+      activeCard._state.tx = 0;
+      activeCard._state.ty = 0;
+      activeCard = null;
+      triggerUpdate();
+    }, { passive: true });
+
+    window.addEventListener('blur', function() {
+      if (activeCard) {
+        activeCard._state.active = false;
+        activeCard._state.tx = 0;
+        activeCard._state.ty = 0;
+        activeCard = null;
+      }
+      triggerUpdate();
+    });
+  }
+
   function injectUI() {
     if (document.getElementById('__sf_btn')) return;
     injectCSS();
@@ -469,6 +452,7 @@ body.light-mode .__sf_ft{border-top-color:rgba(15,23,42,.1);color:#64748b}
   function boot() {
     injectUI();
     applySettings();
+    initLiquidGlassTilt();
   }
   
   if (document.readyState === 'loading') {
