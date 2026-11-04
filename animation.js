@@ -433,7 +433,7 @@ body.light-mode .__sf_ft{border-top-color:rgba(15,23,42,.1);color:#64748b}
       '<div class="__sf_row"><div class="__sf_lbl"><i class="fa-solid fa-bolt"></i><span>Hiệu ứng chuyển động</span></div>' +
       '<button class="__sf_sw" id="__sf_motion" type="button" role="switch"></button></div>' +
       '<button class="__sf_act" id="__sf_fs" type="button"><i class="fa-solid fa-expand"></i><span>Bật toàn màn hình</span></button>' +
-      '</div><div class="__sf_ft">chisaki167 · 2025</div>';
+      '</div><div class="__sf_ft">chisaki167 · 2026</div>';
     document.body.appendChild(panel);
 
     panel.querySelector('.__sf_close').addEventListener('click', function () { togglePanel(false); });
