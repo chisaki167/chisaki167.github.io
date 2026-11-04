@@ -111,7 +111,7 @@ function filterItems(cat, e) {
 
 async function fetchFolderContent(fp, cat, bt, ext) {
   try {
-    var api = 'https:api.github.com/repos/' + GITHUB_USER + '/' + GITHUB_REPO + '/contents/' + fp + '?per_page=100', res = await fetch(api);
+    var api = 'https://api.github.com/repos/' + GITHUB_USER + '/' + GITHUB_REPO + '/contents/' + fp + '?per_page=100', res = await fetch(api);
     if (res.ok) {
       var data = await res.json(), list = [];
       data.forEach(function(file) {
