@@ -1,16 +1,24 @@
 var currentIndex = 0, currentCategory = 'all', GITHUB_USER = 'chisaki167', GITHUB_REPO = 'chisaki167.github.io';
 
-function convertDriveLink(u) {
-  var m = u.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  if (m && m[1]) return 'https://drive.google.com/uc?export=download&id=' + m[1];
-  return u;
-}
-
 function updateLiquidPill(b) {
   var p = document.getElementById('liquidPill');
   if (p && b) {
     p.style.left = b.offsetLeft + 'px';
     p.style.width = b.offsetWidth + 'px';
+    
+    var tabs = document.getElementById('filterTabs');
+    if (tabs) {
+      var scrollLeft = tabs.scrollLeft;
+      var tabWidth = tabs.clientWidth;
+      var btnLeft = b.offsetLeft;
+      var btnWidth = b.offsetWidth;
+      
+      if (btnLeft < scrollLeft) {
+        tabs.scrollTo({ left: btnLeft - 20, behavior: 'smooth' });
+      } else if (btnLeft + btnWidth > scrollLeft + tabWidth) {
+        tabs.scrollTo({ left: btnLeft + btnWidth - tabWidth + 20, behavior: 'smooth' });
+      }
+    }
   }
 }
 
@@ -94,37 +102,114 @@ function filterItems(cat, e) {
   }, 250);
 }
 
-async function fetchFolderContent(fp, cat, bt, ext) {
-  try {
-    var api = 'https://api.github.com/repos/' + GITHUB_USER + '/' + GITHUB_REPO + '/contents/' + fp + '?per_page=100', res = await fetch(api);
-    if (res.ok) {
-      var data = await res.json(), list = [];
-      data.forEach(function(file) {
-        var ok = false;
-        for (var j = 0; j < ext.length; j++) {
-          if (file.name.endsWith(ext[j])) { ok = true; break; }
-        }
-        if (ok) {
-          list.push({ name: file.name, category: cat, badgeText: bt, download_url: file.download_url, size: file.size });
-        }
-      });
-      return list;
+function findFolder(nodes, targetName) {
+  for (var i = 0; i < nodes.length; i++) {
+    if (nodes[i].name === targetName && nodes[i].type === 'directory') {
+      return nodes[i].files || [];
     }
-  } catch (err) {}
+  }
   return [];
 }
 
-async function loadAllContent() {
-  var g = document.getElementById('itemGrid'), allItems = [];
+async function fetchAllFiles() {
+  var branches = ['main', 'master'];
+  
+  // Chiến lược 1: Dùng jsDelivr (Nhanh, không giới hạn)
+  for (var b = 0; b < branches.length; b++) {
+    try {
+      var api = 'https://data.jsdelivr.com/v1/packages/gh/' + GITHUB_USER + '/' + GITHUB_REPO + '@' + branches[b];
+      var res = await fetch(api);
+      if (!res.ok) continue;
+      
+      var data = await res.json();
+      if (!data.files) continue;
+
+      var tree = data.files;
+      var allItems = [];
+      
+      function processFolder(folderName, cat, badgeText, validExts) {
+        var files = findFolder(tree, folderName);
+        files.forEach(function(file) {
+          if (file.type === 'file') {
+            var isValid = false;
+            for (var j = 0; j < validExts.length; j++) {
+              if (file.name.endsWith(validExts[j])) { isValid = true; break; }
+            }
+            if (isValid) {
+              var downloadUrl = 'https://cdn.jsdelivr.net/gh/' + GITHUB_USER + '/' + GITHUB_REPO + '@' + branches[b] + '/' + folderName + '/' + file.name;
+              allItems.push({
+                name: file.name,
+                category: cat,
+                badgeText: badgeText,
+                download_url: downloadUrl,
+                size: file.size
+              });
+            }
+          }
+        });
+      }
+
+      processFolder('mods', 'mod', 'Mod', ['.jar']);
+      processFolder('rsp', 'rsp', 'Resource Pack', ['.zip']);
+      processFolder('litematicas', 'litematica', 'Litematica', ['.litematic', '.zip']);
+      processFolder('saves', 'map', 'Map', ['.zip']);
+      
+      if (allItems.length > 0) return allItems; 
+    } catch (err) {
+      console.warn('jsDelivr thất bại, thử cách khác...', err);
+    }
+  }
+
+  // Chiến lược 2: Dùng GitHub API (Dự phòng nếu jsDelivr không hoạt động)
+  var fallbackItems = [];
+  async function fetchFolderContent(fp, cat, bt, ext) {
+    try {
+      var api = 'https://api.github.com/repos/' + GITHUB_USER + '/' + GITHUB_REPO + '/contents/' + fp + '?per_page=100';
+      var res = await fetch(api);
+      if (res.ok) {
+        var data = await res.json(), list = [];
+        if (Array.isArray(data)) {
+          data.forEach(function(file) {
+            var ok = false;
+            for (var j = 0; j < ext.length; j++) {
+              if (file.name.endsWith(ext[j])) { ok = true; break; }
+            }
+            if (ok) {
+              list.push({ name: file.name, category: cat, badgeText: bt, download_url: file.download_url, size: file.size });
+            }
+          });
+        }
+        return list;
+      }
+    } catch (err) {}
+    return [];
+  }
+  
   var mods = await fetchFolderContent('mods', 'mod', 'Mod', ['.jar']);
   var rsps = await fetchFolderContent('rsp', 'rsp', 'Resource Pack', ['.zip']);
   var lit = await fetchFolderContent('litematicas', 'litematica', 'Litematica', ['.litematic', '.zip']);
   var maps = await fetchFolderContent('saves', 'map', 'Map', ['.zip']);
+  
+  return fallbackItems.concat(mods, rsps, lit, maps);
+}
 
-  allItems = allItems.concat(mods, rsps, lit, maps);
+async function loadAllContent() {
+  var g = document.getElementById('itemGrid');
+  g.innerHTML = '<div class="loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...</div>';
+  
+  var allItems = await fetchAllFiles();
+
+  if (!allItems) {
+    g.innerHTML = `
+      <div class="loading" style="color: #EF4444; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+        <p><i class="fa-solid fa-triangle-exclamation"></i> Lỗi kết nối API. Vui lòng kiểm tra lại tên Repo hoặc thử lại sau.</p>
+        <button onclick="loadAllContent()" style="padding: 8px 16px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-family: var(--font-body); font-weight: 600;">Thử lại</button>
+      </div>`;
+    return;
+  }
 
   if (allItems.length === 0) {
-    g.innerHTML = '<div class="loading">Không tìm thấy tài nguyên nào.</div>';
+    g.innerHTML = '<div class="loading">Không tìm thấy tài nguyên nào trong các thư mục (mods, rsp, litematicas, saves).</div>';
     return;
   }
 
@@ -139,14 +224,6 @@ async function loadAllContent() {
 }
 
 window.addEventListener('DOMContentLoaded', function() {
-  var bs = localStorage.getItem('bg_enabled');
-  if (bs === 'false') {
-    var v = document.getElementById('bgVideo'), o = document.getElementById('bgOverlay'), b = document.getElementById('bgToggleBtn');
-    if (v) v.classList.add('hidden');
-    if (o) o.classList.add('hidden');
-    if (b) b.innerHTML = '<span>🎬 Nền: Tắt</span>';
-  }
-
   var ab = document.querySelector('.filter-btn.active');
   if (ab) updateLiquidPill(ab);
 
