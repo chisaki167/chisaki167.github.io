@@ -375,8 +375,8 @@ body.light-mode .__sf_ft{border-top-color:rgba(15,23,42,.1);color:#64748b}
         var x = (mouseX - rect.left) / rect.width;
         var y = (mouseY - rect.top) / rect.height;
         
-        var tiltX = Math.max(-1.5, Math.min(1.5, (x - 0.5) * 3));
-        var tiltY = Math.max(-1.5, Math.min(1.5, (y - 0.5) * -3));
+        var tiltX = Math.max(-1, Math.min(1, (x - 0.5) * 2));
+        var tiltY = Math.max(-1, Math.min(1, (y - 0.5) * -2));
 
         activeCard.style.setProperty('--glass-tilt-x', tiltX.toFixed(2) + 'deg');
         activeCard.style.setProperty('--glass-tilt-y', tiltY.toFixed(2) + 'deg');
