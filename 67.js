@@ -82,6 +82,26 @@ body.light-mode #auth-gate {
   margin-bottom: 24px;
   font-weight: 700;
 }
+.auth-input {
+  width: 260px;
+  padding: 12px;
+  margin: 6px 0;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.auth-input::placeholder { color: rgba(255,255,255,0.6); }
+body.light-mode .auth-input {
+  background: rgba(255,255,255,0.8);
+  color: #0f172a;
+  border-color: rgba(15,23,42,0.1);
+}
+body.light-mode .auth-input::placeholder { color: rgba(15,23,42,0.5); }
+
 .auth-btn {
   display: flex;
   align-items: center;
@@ -107,8 +127,37 @@ body.light-mode #auth-gate {
 .auth-btn.google:hover { background: rgba(219, 68, 55, 0.3); }
 .auth-btn.github { background: rgba(51, 51, 51, 0.5); border-color: rgba(255, 255, 255, 0.2); }
 .auth-btn.github:hover { background: rgba(51, 51, 51, 0.8); }
+.auth-btn.email {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #60A5FA;
+}
+.auth-btn.email:hover { background: rgba(59, 130, 246, 0.4); color: #fff; }
+
 body.light-mode .auth-btn { color: #0f172a; border-color: rgba(15,23,42,0.1); background: rgba(255,255,255,0.8); }
 body.light-mode .auth-btn:hover { background: #fff; }
+body.light-mode .auth-btn.email { color: #2563eb; }
+body.light-mode .auth-btn.email:hover { color: #fff; }
+
+.auth-divider {
+  width: 260px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 10px 0;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.85rem;
+}
+.auth-divider::before, .auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+.auth-divider::before { margin-right: 10px; }
+.auth-divider::after { margin-left: 10px; }
+body.light-mode .auth-divider { color: rgba(15,23,42,0.5); }
+body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { border-bottom-color: rgba(15,23,42,0.2); }
+
 #logoutBtn {
   display: none;
   position: fixed;
@@ -349,6 +398,20 @@ body.light-mode .auth-btn:hover { background: #fff; }
     gate.id = 'auth-gate';
     gate.innerHTML = `
       <div class="auth-title">Vui lòng đăng nhập để tiếp tục</div>
+      
+      <input type="email" id="auth-email" class="auth-input" placeholder="Email...">
+      <input type="password" id="auth-password" class="auth-input" placeholder="Mật khẩu...">
+      <div style="display:flex; gap:10px; width:260px; margin-bottom: 12px;">
+        <button class="auth-btn email" style="width:100%; margin:0;" onclick="loginEmail()">
+          Đăng nhập
+        </button>
+        <button class="auth-btn email" style="width:100%; margin:0; background:rgba(255,255,255,0.05);" onclick="registerEmail()">
+          Đăng ký
+        </button>
+      </div>
+
+      <div class="auth-divider">hoặc</div>
+
       <button class="auth-btn google" onclick="loginGoogle()">
         <i class="fa-brands fa-google" style="color:#DB4437"></i> Đăng nhập bằng Google
       </button>
@@ -378,7 +441,7 @@ body.light-mode .auth-btn:hover { background: #fff; }
     script.type = 'module';
     script.textContent = `
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-      import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+      import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
       const firebaseConfig = ${JSON.stringify(firebaseConfig)};
       const app = initializeApp(firebaseConfig);
@@ -390,6 +453,22 @@ body.light-mode .auth-btn:hover { background: #fff; }
       window.loginGithub = () => {
         signInWithPopup(auth, new GithubAuthProvider()).catch(err => alert(err.message));
       };
+      
+      window.loginEmail = () => {
+        const email = document.getElementById('auth-email').value;
+        const password = document.getElementById('auth-password').value;
+        if (!email || !password) return alert('Vui lòng nhập đầy đủ Email và Mật khẩu!');
+        signInWithEmailAndPassword(auth, email, password).catch(err => alert("Lỗi đăng nhập: " + err.message));
+      };
+
+      window.registerEmail = () => {
+        const email = document.getElementById('auth-email').value;
+        const password = document.getElementById('auth-password').value;
+        if (!email || !password) return alert('Vui lòng nhập đầy đủ Email và Mật khẩu!');
+        if (password.length < 6) return alert('Mật khẩu phải có ít nhất 6 ký tự!');
+        createUserWithEmailAndPassword(auth, email, password).catch(err => alert("Lỗi đăng ký: " + err.message));
+      };
+
       window.logout = () => signOut(auth);
 
       onAuthStateChanged(auth, (user) => {
