@@ -534,7 +534,7 @@ body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { bo
     }
 
     document.addEventListener('pointermove', function(e) {
-      if (document.body.classList.contains('glass-disabled') || document.body.classList.contains('no-effects')) return;
+      if (document.body.classList.contains('glass-disabled')) return;
       
       var card = e.target.closest(selector);
       if (card !== activeCard) {
@@ -565,13 +565,15 @@ body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { bo
         var x = (mouseX - rect.left) / rect.width;
         var y = (mouseY - rect.top) / rect.height;
         
-        var tiltX = Math.max(-1, Math.min(1, (x - 0.5) * 2));
-        var tiltY = Math.max(-1, Math.min(1, (y - 0.5) * -2));
+        activeCard.style.setProperty('--mouse-x', (mouseX - rect.left) + 'px');
+        activeCard.style.setProperty('--mouse-y', (mouseY - rect.top) + 'px');
 
-        activeCard.style.setProperty('--glass-tilt-x', tiltX.toFixed(2) + 'deg');
-        activeCard.style.setProperty('--glass-tilt-y', tiltY.toFixed(2) + 'deg');
-        activeCard.style.setProperty('--mouse-x', (x * 100).toFixed(2) + '%');
-        activeCard.style.setProperty('--mouse-y', (y * 100).toFixed(2) + '%');
+        if (!document.body.classList.contains('no-effects')) {
+          var tiltX = Math.max(-1, Math.min(1, (x - 0.5) * 2));
+          var tiltY = Math.max(-1, Math.min(1, (y - 0.5) * -2));
+          activeCard.style.setProperty('--glass-tilt-x', tiltX.toFixed(2) + 'deg');
+          activeCard.style.setProperty('--glass-tilt-y', tiltY.toFixed(2) + 'deg');
+        }
       });
     }, { passive: true });
 
@@ -844,8 +846,9 @@ body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { bo
     blockDevTools();
     forceExternalBackground();
     injectUI();
+    applySettings();
+    initLiquidGlassTilt();
     injectAuthUI();
-    applySettings(); // <-- Đã thêm lại hàm này để áp dụng trạng thái ban đầu
     
     setInterval(function() {
       if (window.isAuthLocked) {
