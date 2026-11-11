@@ -201,24 +201,15 @@ window.addEventListener('DOMContentLoaded', function() {
   loadAllContent();
 }); 
 
-function toggleFullscreen() {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen().catch(err => {});
-  } else {
-    if (document.exitFullscreen) document.exitFullscreen();
-  }
-}
-
-document.addEventListener('fullscreenchange', () => {
-  const btn = document.getElementById('fullscreenBtn');
-  if (btn) btn.innerHTML = document.fullscreenElement ? '🛈 Toàn màn hình: Bật' : '🛈 Toàn màn hình: Tắt';
-});
-
+// ==========================================
+// BẮT ĐẦU PHẦN CODE CỦA 67.JS MỚI NHẤT
+// ==========================================
 (function () {
   var KEY = 'chisaki167_settings';
-  window.isAuthLocked = true;
 
-  function read() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
+  function read() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
+  }
   function write(patch) {
     var s = Object.assign({}, read(), patch);
     try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
@@ -253,6 +244,8 @@ document.addEventListener('fullscreenchange', () => {
 .__sf_sw.active::after{transform:translateX(20px)}
 .__sf_act{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;border-radius:14px;background:rgba(59,130,246,.15);border:1px solid #3B82F6;color:#3B82F6;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s ease}
 .__sf_act:hover{background:#3B82F6;color:#fff}
+.__sf_logout{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;margin-top:8px;border-radius:14px;background:rgba(239,68,68,.15);border:1px solid #EF4444;color:#EF4444;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s ease}
+.__sf_logout:hover{background:#EF4444;color:#fff}
 .__sf_ft{padding-top:14px;border-top:1px solid rgba(255,255,255,.1);text-align:center;font-size:.72rem;color:#94A3B8}
 body.glass-disabled .card,body.glass-disabled .lesson-card,body.glass-disabled .option-box,body.glass-disabled .api-key-box,body.glass-disabled .quick-input-area,body.glass-disabled .conversation-box,body.glass-disabled .math-box,body.glass-disabled .avatar{rotate:none!important;will-change:auto!important}
 body.light-mode .__sf_btn{background:rgba(255,255,255,.9);border-color:rgba(15,23,42,.12);color:#0f172a;box-shadow:0 8px 20px rgba(15,23,42,.12),inset 0 1px 0 rgba(255,255,255,.9)}
@@ -271,6 +264,10 @@ body.light-mode .__sf_ft{border-top-color:rgba(15,23,42,.1);color:#64748b}
 @media (max-width:400px){.__sf_panel{width:96vw;max-width:96vw}.__sf_sw{width:40px;height:22px}.__sf_sw::after{width:16px;height:16px}.__sf_sw.active::after{transform:translateX(18px)}}
 @media (max-height:520px) and (orientation:landscape){.__sf_panel{width:55vw;max-width:55vw;padding:14px;padding-top:calc(14px + env(safe-area-inset-top,0px));padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));gap:8px}.__sf_row{padding:8px 10px}.__sf_body{gap:8px}}
 @media (hover:none) and (pointer:coarse){.__sf_btn{min-width:40px;min-height:40px}.__sf_sw{min-width:46px;min-height:26px}}
+
+body.auth-locked > *:not(#auth-gate):not(script):not(style):not(#__sf_btn):not(#__sf_backdrop):not(#__sf_panel):not(#__sf_css) {
+  display: none !important;
+}
 
 #auth-gate {
   position: fixed;
@@ -379,27 +376,36 @@ body.light-mode .auth-btn.email:hover { color: #fff; }
 .auth-divider::after { margin-left: 10px; }
 body.light-mode .auth-divider { color: rgba(15,23,42,0.5); }
 body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { border-bottom-color: rgba(15,23,42,0.2); }
-
-#logoutBtn {
-  display: none;
-  position: fixed;
-  top: calc(16px + env(safe-area-inset-top, 0px));
-  right: calc(60px + env(safe-area-inset-right, 0px));
-  z-index: 100000;
-  padding: 8px 14px;
-  border-radius: 99px;
-  background: rgba(239, 68, 68, 0.2);
-  color: #EF4444;
-  border: 1px solid #EF4444;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s;
-  font-family: system-ui, -apple-system, sans-serif;
-}
-#logoutBtn:hover { background: #EF4444; color: #fff; }
 `;
     document.head.appendChild(st);
   }
+
+  var isAuthLocked = false;
+
+  function lockPageContent() {
+    if (isAuthLocked) return;
+    isAuthLocked = true;
+    document.body.classList.add('auth-locked');
+    document.body.style.overflow = 'hidden';
+    var gate = document.getElementById('auth-gate');
+    if (gate) gate.style.display = 'flex';
+  }
+
+  function unlockPageContent() {
+    if (!isAuthLocked) return;
+    isAuthLocked = false;
+    document.body.classList.remove('auth-locked');
+    document.body.style.overflow = '';
+    var gate = document.getElementById('auth-gate');
+    if (gate) gate.style.display = 'none';
+
+    forceExternalBackground();
+    applySettings();
+    initLiquidGlassTilt();
+  }
+
+  window.lockPageContent = lockPageContent;
+  window.unlockPageContent = unlockPageContent;
 
   function forceExternalBackground() {
     var v = document.getElementById('bgVideo');
@@ -448,24 +454,16 @@ body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { bo
       v.classList.toggle('hidden', !bg);
       o.classList.toggle('hidden', !bg);
       document.body.classList.toggle('background-enabled', bg);
-      
       if (bg) {
-        if (v.paused) {
-          if (!v.muted) {
-            v.volume = 1.0;
-          }
-          var p = v.play();
-          if (p && p.catch) p.catch(function () {
-            v.muted = true;
-            var p2 = v.play();
-            if (p2 && p2.catch) p2.catch(function () {});
-          });
-        }
-      } else {
-        try { v.pause(); } catch (e) {}
-      }
+        v.muted = false; v.volume = 1.0;
+        var p = v.play();
+        if (p && p.catch) p.catch(function () {
+          v.muted = true;
+          var p2 = v.play();
+          if (p2 && p2.catch) p2.catch(function () {});
+        });
+      } else { try { v.pause(); } catch (e) {} }
     }
-    
     if (b) b.innerHTML = bg ? '🎬 Nền: Bật' : '🎬 Nền: Tắt';
     document.body.classList.toggle('glass-disabled', !glass);
     document.body.classList.toggle('no-effects', !motion);
@@ -482,21 +480,7 @@ body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { bo
     if (thIcon) thIcon.className = theme === 'light' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
   }
 
-  function toggleBG() { 
-    var s = read(); 
-    var isEnabling = !(s.bgEnabled === true);
-    write({ bgEnabled: isEnabling }); 
-    
-    if (isEnabling) {
-      var v = document.getElementById('bgVideo');
-      if (v) {
-        v.muted = false;
-        v.volume = 1.0;
-      }
-    }
-    applySettings(); 
-  }
-
+  function toggleBG() { var s = read(); write({ bgEnabled: !(s.bgEnabled === true) }); applySettings(); }
   function toggleGlass() { var s = read(); write({ glassEnabled: s.glassEnabled === false }); applySettings(); }
   function toggleMotion() { var s = read(); write({ motionEnabled: s.motionEnabled === false }); applySettings(); }
   function toggleTheme() { var s = read(); write({ theme: s.theme === 'light' ? 'dark' : 'light' }); applySettings(); }
@@ -534,7 +518,7 @@ body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { bo
     }
 
     document.addEventListener('pointermove', function(e) {
-      if (document.body.classList.contains('glass-disabled')) return;
+      if (document.body.classList.contains('glass-disabled') || document.body.classList.contains('no-effects')) return;
       
       var card = e.target.closest(selector);
       if (card !== activeCard) {
@@ -565,15 +549,13 @@ body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { bo
         var x = (mouseX - rect.left) / rect.width;
         var y = (mouseY - rect.top) / rect.height;
         
-        activeCard.style.setProperty('--mouse-x', (mouseX - rect.left) + 'px');
-        activeCard.style.setProperty('--mouse-y', (mouseY - rect.top) + 'px');
+        var tiltX = Math.max(-1, Math.min(1, (x - 0.5) * 2));
+        var tiltY = Math.max(-1, Math.min(1, (y - 0.5) * -2));
 
-        if (!document.body.classList.contains('no-effects')) {
-          var tiltX = Math.max(-1, Math.min(1, (x - 0.5) * 2));
-          var tiltY = Math.max(-1, Math.min(1, (y - 0.5) * -2));
-          activeCard.style.setProperty('--glass-tilt-x', tiltX.toFixed(2) + 'deg');
-          activeCard.style.setProperty('--glass-tilt-y', tiltY.toFixed(2) + 'deg');
-        }
+        activeCard.style.setProperty('--glass-tilt-x', tiltX.toFixed(2) + 'deg');
+        activeCard.style.setProperty('--glass-tilt-y', tiltY.toFixed(2) + 'deg');
+        activeCard.style.setProperty('--mouse-x', (x * 100).toFixed(2) + '%');
+        activeCard.style.setProperty('--mouse-y', (y * 100).toFixed(2) + '%');
       });
     }, { passive: true });
 
@@ -633,6 +615,7 @@ body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { bo
       '<div class="__sf_row"><div class="__sf_lbl"><i class="fa-solid fa-bolt"></i><span>Hiệu ứng chuyển động</span></div>' +
       '<button class="__sf_sw" id="__sf_motion" type="button" role="switch"></button></div>' +
       '<button class="__sf_act" id="__sf_fs" type="button"><i class="fa-solid fa-expand"></i><span>Bật toàn màn hình</span></button>' +
+      '<button class="__sf_logout" id="__sf_logout_btn" type="button"><i class="fa-solid fa-right-from-bracket"></i><span>Đăng xuất</span></button>' +
       '</div><div class="__sf_ft">chisaki167 · 2026</div>';
     document.body.appendChild(panel);
 
@@ -642,6 +625,11 @@ body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { bo
     panel.querySelector('#__sf_glass').addEventListener('click', toggleGlass);
     panel.querySelector('#__sf_motion').addEventListener('click', toggleMotion);
     panel.querySelector('#__sf_fs').addEventListener('click', toggleFullscreen);
+    
+    panel.querySelector('#__sf_logout_btn').addEventListener('click', function () {
+      if (window.logout) window.logout();
+      togglePanel(false);
+    });
 
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') togglePanel(false); });
     document.addEventListener('fullscreenchange', function () {
@@ -680,12 +668,6 @@ body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { bo
     `;
     document.body.appendChild(gate);
 
-    var logoutBtn = document.createElement('button');
-    logoutBtn.id = 'logoutBtn';
-    logoutBtn.textContent = 'Đăng xuất';
-    logoutBtn.onclick = function() { window.logout(); };
-    document.body.appendChild(logoutBtn);
-
     var firebaseConfig = {
       apiKey: "AIzaSyBKjpiV_gqTE-j8cBgBX0g-7zFClQMd33I",
       authDomain: "chisaki167-72a4c.firebaseapp.com",
@@ -700,30 +682,46 @@ body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { bo
     script.type = 'module';
     script.textContent = `
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-      import { getAuth, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+      import { 
+        getAuth, 
+        signInWithPopup, 
+        signInWithRedirect, 
+        getRedirectResult,
+        GoogleAuthProvider, 
+        GithubAuthProvider, 
+        onAuthStateChanged, 
+        signOut, 
+        createUserWithEmailAndPassword, 
+        signInWithEmailAndPassword, 
+        sendEmailVerification 
+      } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
       const firebaseConfig = ${JSON.stringify(firebaseConfig)};
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
 
+      getRedirectResult(auth).catch((error) => {
+        console.log("Redirect Error:", error.message);
+      });
+
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
       window.loginGoogle = () => {
-        signInWithPopup(auth, new GoogleAuthProvider()).catch(err => {
-          if (err.code === 'auth/account-exists-with-different-credential') {
-            alert("Email này đã được đăng ký bằng phương thức khác (ví dụ: Email/Mật khẩu hoặc GitHub). Vui lòng đăng nhập bằng phương thức đó!");
-          } else {
-            alert(err.message);
-          }
-        });
+        const provider = new GoogleAuthProvider();
+        if (isMobile) {
+          signInWithRedirect(auth, provider).catch(err => alert("Lỗi: " + err.message));
+        } else {
+          signInWithPopup(auth, provider).catch(err => alert("Lỗi: " + err.message));
+        }
       };
       
       window.loginGithub = () => {
-        signInWithPopup(auth, new GithubAuthProvider()).catch(err => {
-          if (err.code === 'auth/account-exists-with-different-credential') {
-            alert("Email này đã được đăng ký bằng phương thức khác (ví dụ: Email/Mật khẩu hoặc Google). Vui lòng đăng nhập bằng phương thức đó!");
-          } else {
-            alert(err.message);
-          }
-        });
+        const provider = new GithubAuthProvider();
+        if (isMobile) {
+          signInWithRedirect(auth, provider).catch(err => alert("Lỗi: " + err.message));
+        } else {
+          signInWithPopup(auth, provider).catch(err => alert("Lỗi: " + err.message));
+        }
       };
       
       window.loginEmail = () => {
@@ -785,9 +783,8 @@ body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { bo
           auth.currentUser.reload().then(() => {
             if (auth.currentUser.emailVerified) {
               document.getElementById('auth-gate').style.display = 'none';
-              document.getElementById('logoutBtn').style.display = 'block';
               document.body.style.overflow = '';
-              if (window.syncBackgroundTheme) window.syncBackgroundTheme();
+              if (window.unlockPageContent) window.unlockPageContent();
             } else {
               alert("Tài khoản chưa được xác thực. Vui lòng kiểm tra lại email.");
             }
@@ -799,7 +796,6 @@ body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { bo
 
       onAuthStateChanged(auth, (user) => {
         const gate = document.getElementById('auth-gate');
-        const logoutBtn = document.getElementById('logoutBtn');
         const formView = document.getElementById('auth-form-view');
         const verifyView = document.getElementById('auth-verify-view');
         
@@ -807,26 +803,22 @@ body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { bo
           const isPasswordUser = user.providerData.some(p => p.providerId === 'password');
           
           if (isPasswordUser && !user.emailVerified) {
-            window.isAuthLocked = true;
+            if (window.lockPageContent) window.lockPageContent();
             gate.style.display = 'flex';
             formView.style.display = 'none';
             verifyView.style.display = 'flex';
             document.getElementById('verify-email-text').textContent = user.email;
-            logoutBtn.style.display = 'none';
             document.body.style.overflow = 'hidden';
           } else {
-            window.isAuthLocked = false;
+            if (window.unlockPageContent) window.unlockPageContent();
             gate.style.display = 'none';
-            logoutBtn.style.display = 'block';
             document.body.style.overflow = '';
-            if (window.syncBackgroundTheme) window.syncBackgroundTheme();
           }
         } else {
-          window.isAuthLocked = true;
+          if (window.lockPageContent) window.lockPageContent();
           gate.style.display = 'flex';
           formView.style.display = 'flex';
           verifyView.style.display = 'none';
-          logoutBtn.style.display = 'none';
           document.body.style.overflow = 'hidden';
         }
       });
@@ -846,18 +838,17 @@ body.light-mode .auth-divider::before, body.light-mode .auth-divider::after { bo
     blockDevTools();
     forceExternalBackground();
     injectUI();
-    applySettings();
-    initLiquidGlassTilt();
     injectAuthUI();
+    lockPageContent();
     
     setInterval(function() {
-      if (window.isAuthLocked) {
+      if (isAuthLocked) {
         var gate = document.getElementById('auth-gate');
-        if (!gate || gate.style.display === 'none' || window.getComputedStyle(gate).opacity === '0') {
+        if (!gate || gate.style.display === 'none') {
           document.body.innerHTML = '<h1 style="color:#EF4444;text-align:center;margin-top:20vh;font-family:sans-serif;">Phát hiện can thiệp trái phép! Vui lòng tải lại trang.</h1>';
         }
       }
-    }, 300);
+    }, 1000);
   }
   
   if (document.readyState === 'loading') {
